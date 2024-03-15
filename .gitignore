@@ -2,6 +2,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
+data/*
+*.avi
+*.json
+*.mp4
+*.pdf
+*.csv
+*.pkl
 
 # C extensions
 *.so
