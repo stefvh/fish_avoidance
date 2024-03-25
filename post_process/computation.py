@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 import pandas as pd
-import utils.maths as maths
+import utils.maths.geometry as geometry
 
 from pre_process.environment import Environment
 import post_process.scenarios as scenarios
@@ -65,6 +65,7 @@ def compute_results(
         results[f"robot_walls_alignments_n={n_step}"] = []
     results.update(
         {
+            "robot_distance_batch": [],
             "fish_velocity_batch": [],
             "fish_turn_batch": [],
             "fish_direction_batch": [],
@@ -72,6 +73,13 @@ def compute_results(
             "robot_acceleration_batch": [],
             "robot_angle_diff_batch": [],
             "robot_walls_alignments_batch": [],
+        }
+    )
+    results.update(
+        {
+            "robot_distance_slopes": [],
+            "fish_velocity_slopes": [],
+            "robot_velocity_slopes": [],
         }
     )
 
@@ -156,7 +164,7 @@ def compute_results(
                         trial_fish_poses[i + tfp_n_step_plus, 0]
                         - trial_fish_poses[i, 0],
                     )
-                fish_turns[i] = abs(maths.diff_angles(angle, angle2))
+                fish_turns[i] = abs(geometry.diff_angles(angle, angle2))
             results[f"fish_turn_n={n_step}"].extend(fish_turns.tolist())
 
             robot_velocities = np.full(n_frames, np.nan)
@@ -207,7 +215,7 @@ def compute_results(
                         trial_robot_poses[i + trp_n_step, 1] - trial_robot_poses[i, 1],
                         trial_robot_poses[i + trp_n_step, 0] - trial_robot_poses[i, 0],
                     )
-                    robot_angle_diff[i] = abs(maths.diff_angles(angle, robot_angle))
+                    robot_angle_diff[i] = abs(geometry.diff_angles(angle, robot_angle))
             results[f"robot_angle_diff_n={n_step}"].extend(robot_angle_diff.tolist())
 
             robot_walls_alignments = []
@@ -228,7 +236,7 @@ def compute_results(
                         )
                         wall_vector = environment.get_wall_vector_by_index(wall_index)
                         _robot_wall_aligments.append(
-                            maths.angle_between_vectors(robot_vector, wall_vector)
+                            geometry.angle_between_vectors(robot_vector, wall_vector)
                         )
                     robot_walls_alignments.append(_robot_wall_aligments)
             results[f"robot_walls_alignments_n={n_step}"].extend(robot_walls_alignments)
@@ -261,6 +269,19 @@ def compute_results(
             batch_fish_directions[i] = q[:2] - p[:2]
 
         # 
+        robot_distance_batch = np.full(n_frames, np.nan)
+        for i in range(batch, n_frames - batch):
+            if (
+                np.isnan(batch_fish_poses[i]).any()
+                or np.isnan(batch_robot_poses[i]).any()
+            ):
+                continue
+            else:
+                robot_distance_batch[i] = np.linalg.norm(
+                    batch_fish_poses[i, :2] - batch_robot_poses[i, :2]
+                )
+        results["robot_distance_batch"].extend(robot_distance_batch.tolist())
+
         fish_velocity_batch = np.full(n_frames, np.nan)
         for i in range(batch, n_frames - batch):
             if (
@@ -291,7 +312,7 @@ def compute_results(
                     batch_fish_poses[i + batch, 1] - batch_fish_poses[i, 1],
                     batch_fish_poses[i + batch, 0] - batch_fish_poses[i, 0],
                 )
-                fish_turn_batch[i] = abs(maths.diff_angles(angle, angle2))
+                fish_turn_batch[i] = abs(geometry.diff_angles(angle, angle2))
         results["fish_turn_batch"].extend(fish_turn_batch.tolist())
 
         results["fish_direction_batch"].extend(batch_fish_directions.tolist())
@@ -339,7 +360,7 @@ def compute_results(
                     batch_robot_poses[i + batch, 1] - batch_robot_poses[i, 1],
                     batch_robot_poses[i + batch, 0] - batch_robot_poses[i, 0],
                 )
-                robot_angle_diff_batch[i] = abs(maths.diff_angles(angle, robot_angle))
+                robot_angle_diff_batch[i] = abs(geometry.diff_angles(angle, robot_angle))
         results["robot_angle_diff_batch"].extend(robot_angle_diff_batch.tolist())
 
         robot_walls_alignments_batch = []
@@ -354,13 +375,56 @@ def compute_results(
                 for wall_index in wall_sorted_indexes[i]:
                     wall_vector = environment.get_wall_vector_by_index(wall_index)
                     _robot_wall_aligments.append(
-                        maths.angle_between_vectors(
+                        geometry.angle_between_vectors(
                             batch_robot_directions[i], wall_vector
                         )
                     )
                 robot_walls_alignments_batch.append(_robot_wall_aligments)
         results["robot_walls_alignments_batch"].extend(robot_walls_alignments_batch)
         results["robot_walls_alignments_batch"].extend([[np.nan] * 4] * batch * 2)
+
+        #######################################################################
+        # Slopes
+
+        x_period = 1 # period
+        robot_distance_slopes = np.full(n_frames, np.nan)
+        for i in range(batch, n_frames - batch):
+            if (
+                np.isnan(robot_distance_batch[i]).any()
+                or np.isnan(robot_distance_batch[i + batch]).any()
+            ):
+                continue
+            else:
+                robot_distance_slopes[i] = (
+                    robot_distance_batch[i + batch] - robot_distance_batch[i]
+                ) / (batch * x_period)
+        results["robot_distance_slopes"].extend(robot_distance_slopes.tolist())
+
+        fish_velocity_slopes = np.full(n_frames, np.nan)
+        for i in range(batch, n_frames - batch):
+            if (
+                np.isnan(fish_velocity_batch[i]).any()
+                or np.isnan(fish_velocity_batch[i + batch]).any()
+            ):
+                continue
+            else:
+                fish_velocity_slopes[i] = (
+                    fish_velocity_batch[i + batch] - fish_velocity_batch[i]
+                ) / (batch * x_period)
+        results["fish_velocity_slopes"].extend(fish_velocity_slopes.tolist())
+
+        robot_velocity_slopes = np.full(n_frames, np.nan)
+        for i in range(batch, n_frames - batch):
+            if (
+                np.isnan(robot_velocity_batch[i]).any()
+                or np.isnan(robot_velocity_batch[i + batch]).any()
+            ):
+                continue
+            else:
+                robot_velocity_slopes[i] = (
+                    robot_velocity_batch[i + batch] - robot_velocity_batch[i]
+                ) / (batch * x_period)
+        results["robot_velocity_slopes"].extend(robot_velocity_slopes.tolist())
 
         #######################################################################
         # Scenarios

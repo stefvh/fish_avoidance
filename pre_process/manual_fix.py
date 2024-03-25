@@ -7,9 +7,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from priors.foldering import get_data_folders
-from pre_process.experiment import Experiment
+from pre_process.experiment import Experiment, get_experiment
 
-from utils.parser import parser_default
+from utils.parser import get_default_parser
+
+import warnings
+warnings.filterwarnings('ignore')
 
 plt.rcParams.update(
     {
@@ -20,7 +23,7 @@ plt.rcParams.update(
 )
 
 def parse_args():
-    parser = parser_default()
+    parser = get_default_parser()
 
     parser.add_argument("-sf", "--start_frame", type=int, default=13250)
     parser.add_argument("-ef", "--end_frame", type=int, default=13290)
@@ -196,7 +199,9 @@ if __name__ == "__main__":
     args = parse_args()
     variables = vars(args)
 
-    input_folder, output_folder = get_data_folders(variables["parent_folder"], variables["experiment_datetime"])
+    experiment = get_experiment(**variables)
+
+    input_folder, output_folder = experiment.input_folder, experiment.output_folder
     with open(output_folder + "/experiment.pkl", "rb") as f:
         experiment = pickle.load(f)
 

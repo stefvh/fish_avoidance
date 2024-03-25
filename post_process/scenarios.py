@@ -3,7 +3,7 @@ import pandas as pd
 
 from pre_process.environment import Environment
 
-import utils.maths as maths
+import utils.maths.geometry as geometry
 
 CHASE_ROBOT_VELOCITY_LOWER_LIMIT = 0.5
 CHASE_ROBOT_ANGLE_DIFF_UPPER_LIMIT = np.pi / 6
@@ -28,7 +28,7 @@ def get_wall_information(environment: Environment,
     for wall_index in wall_sorted_indexes:
         wall_vector = environment.get_wall_vector_by_index(wall_index)
         robot_wall_aligments.append(
-            abs(maths.angle_between_vectors(robot_vector, wall_vector))
+            abs(geometry.angle_between_vectors(robot_vector, wall_vector))
             < ALIGNMENT_WALL_ANGLE_UPPER_LIMIT
         )
 

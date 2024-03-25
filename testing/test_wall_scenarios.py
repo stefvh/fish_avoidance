@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 from pre_process import environment
-import utils.maths as maths
+import utils.maths.geometry as geometry
 
 XLIMS = [0, 10]
 YLIMS = [0, 10]
@@ -28,7 +28,7 @@ def get_robot_wall_alignments(wall_sorted_indexes: list, robot_vector: np.ndarra
     for wall_index in wall_sorted_indexes:
         wall_vector = environment.get_wall_vector_by_index(WALL_CORNERS, wall_index)
         robot_wall_aligments.append(
-            abs(maths.angle_between_vectors(robot_vector, wall_vector))
+            abs(geometry.angle_between_vectors(robot_vector, wall_vector))
             < U_WALL_ALIGNMENT
         )
     return robot_wall_aligments
@@ -61,7 +61,7 @@ def hypothesized_potential_2(position, fish_position, fish_orientation, robot_po
         position[1] - fish_position[1],
         position[0] - fish_position[0],
     )
-    angle_diff = abs(maths.diff_angles(angle, fish_orientation))
+    angle_diff = abs(geometry.diff_angles(angle, fish_orientation))
     if angle_diff < np.pi / 6:
         # smaller angle difference, higher potential
         p_f = 1 - angle_diff / (np.pi / 6)
@@ -79,7 +79,7 @@ def hypothesized_potential_2(position, fish_position, fish_orientation, robot_po
         fish_position[1] - robot_position[1],
         fish_position[0] - robot_position[0],
     )
-    angle_diff = abs(maths.diff_angles(angle, rf_angle))
+    angle_diff = abs(geometry.diff_angles(angle, rf_angle))
     if angle_diff < np.pi / 6:
         # smaller angle difference, higher potential
         p_r = 1 - angle_diff / (np.pi / 6)
@@ -101,7 +101,7 @@ def hypothesized_potential_2(position, fish_position, fish_orientation, robot_po
             wall_vector = environment.get_wall_vector_by_index(WALL_CORNERS, wall_index)
             wall_angle = np.arctan2(wall_vector[1], wall_vector[0])
             for w_a in [wall_angle, wall_angle + np.pi]:
-                angle_diff = abs(maths.diff_angles(angle, w_a))
+                angle_diff = abs(geometry.diff_angles(angle, w_a))
                 _p_w = 0.0
                 if angle_diff < np.pi / 6:
                     # smaller angle difference, higher potential
@@ -117,7 +117,7 @@ def hypothesized_potential_2(position, fish_position, fish_orientation, robot_po
     potential = w_f * p_f + w_r * p_r + w_w * p_w
 
     # remove potential around robot
-    angle_diff = abs(maths.diff_angles(angle, rf_angle + np.pi))
+    angle_diff = abs(geometry.diff_angles(angle, rf_angle + np.pi))
     if angle_diff < np.pi / 6:
         potential = 0
 

@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
-import utils.maths as maths
+import utils.maths.geometry as geometry
 
 U_ROBOT_VELOCITY = 0.5
 L_ROBOT_ANGLE_DIFF = np.pi / 6
@@ -65,13 +65,13 @@ def test_is_robot_chasing():
             robot_positions[1] - robot_positions[0]
         )
 
-        robot_angle = maths.vector_angle(
+        robot_angle = geometry.vector_angle(
             robot_positions[0], robot_positions[1]
         )
-        robot_fish_angle = maths.vector_angle(
+        robot_fish_angle = geometry.vector_angle(
             robot_positions[0], fish_positions[1]
         )
-        robot_angle_diff = abs(maths.diff_angles(robot_fish_angle, robot_angle))
+        robot_angle_diff = abs(geometry.diff_angles(robot_fish_angle, robot_angle))
 
         for r_pos in robot_positions:
             ax.scatter(r_pos[0], r_pos[1], c = 'red', marker = 'o', s = 10,)

@@ -11,13 +11,12 @@ from priors.foldering import get_data_folders
 from pre_process.arena_conversion import transform_corner_data
 from pre_process.track_conversion import get_track_pixel, get_track_pose
 from pre_process.visualization import visualize
-from post_process.analysis import compute_results
+from post_process.computation import compute_results
+from utils.parser import get_default_parser
 # from pre_process.rendering import render
 
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-pf", "--parent_folder", type=str, default="June13_2")
-    parser.add_argument("-ed", "--experiment_datetime", type=str, default="20230613-165310")
+    parser = get_default_parser()
     parser.add_argument("--renew_trials", action='store_true')
     parser.add_argument("--renew_tracks", action='store_true')
     parser.add_argument("--renew_results", action='store_true')
@@ -27,13 +26,6 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def get_experiment(parent_folder,
-                   experiment_datetime):
-    _, folder = get_data_folders(parent_folder, experiment_datetime)
-    if not os.path.exists(folder + "/experiment.pkl"):
-        raise FileNotFoundError(f"No experiment file found at {folder}")
-    else:
-        return pickle.load(open(folder + "/experiment.pkl", "rb"))
 
 class Experiment:
     def __init__(self,
@@ -44,7 +36,9 @@ class Experiment:
                  renew_tracks=False,
                  renew_results=False,
                  renew_all=False,
-                 save_video=False,) -> None:
+                 save_video=False,
+                 **kwargs,) -> None:
+        self.parent_folder = parent_folder
         self.experiment_datetime = experiment_datetime
         self.input_folder, self.output_folder = get_data_folders(parent_folder, experiment_datetime)
         if not os.path.exists(self.output_folder):
@@ -73,11 +67,11 @@ class Experiment:
         print("Loading properties...")
         self.load_properties()
 
-        print("Loading tracks...")
-        self.load_tracks()
-
         print("Loading trials...")
         self.load_trials()
+
+        print("Loading tracks...")
+        self.load_tracks()
 
         if save_video:
             print("Rendering experiment...")
@@ -169,6 +163,18 @@ class Experiment:
             self.identities_corrected = os.path.exists(f"pre_process/identity_swaps/{self.experiment_datetime}.csv")
             self.manually_corrected = os.path.exists(f"pre_process/manual_poses/{self.experiment_datetime}.csv")
     
+    @property
+    def milling_tracks(self):
+        sf = self.robot_states.loc[self.robot_states["state"] == "MILLING"]["frame_number"].iloc[0]
+        ef = self.robot_states.loc[self.robot_states["state"] == "MILLING"]["frame_number"].iloc[-1]
+        return self.robot_poses[sf:ef], self.fish_poses[sf:ef]
+    
+    @property
+    def active_tracks(self):
+        sf = self.trials["start_frame"].min()
+        ef = self.trials["end_frame"].max()
+        return self.robot_poses[sf:ef], self.fish_poses[sf:ef]
+    
     def _track_conversion(self):
         json_tracks = json.load(open(self.input_folder + '/tracks.json'))
 
@@ -243,12 +249,20 @@ class Experiment:
                 df_fish[i] = np.array([np.nan] * dimensions)
         return df_robot, df_fish
     
+    def calc_track_accuracy(self, poses):
+        return 1 - np.sum(np.isnan(poses[:, 0])) / poses.shape[0]
+    
     def _track_manual_correction(self):
+        pre_mil_acc = self.calc_track_accuracy(self.milling_tracks[0])
+        pre_act_acc = self.calc_track_accuracy(self.active_tracks[0])
+        pre_tot_acc = self.calc_track_accuracy(self.robot_poses)
+
         self.manual_corrections = np.zeros((self.original_frame_count, 1), dtype=bool)
         if not os.path.exists(f"pre_process/manual_poses/{self.experiment_datetime}.csv"):
             self.manually_corrected = False
             raise UserWarning(f"Manual poses file not found for {self.experiment_datetime} \n" +
-                                "Are you sure there are no positions missing?")
+                                "Are you sure there are no positions missing? \n" +
+                                "Note: Active tracking accuracy is {pre_accuracy:.2f}%.")
         else:
             cv_input = pd.read_csv(f"pre_process/manual_poses/{self.experiment_datetime}.csv")
             for _, row in cv_input.iterrows():
@@ -264,6 +278,14 @@ class Experiment:
                 self.manual_corrections[frame_number] = True
 
             self.manually_corrected = True
+        
+        post_mil_acc = self.calc_track_accuracy(self.milling_tracks[0])
+        post_act_acc = self.calc_track_accuracy(self.active_tracks[0])
+        post_tot_acc = self.calc_track_accuracy(self.robot_poses)
+        
+        print(f"---> Total tracking accuracy improved from {pre_tot_acc:.4f}% to {post_tot_acc:.4f}%.")
+        print(f"---> Active tracking accuracy improved from {pre_act_acc:.4f}% to {post_act_acc:.4f}%.")
+        print(f"---> Milling tracking accuracy improved from {pre_mil_acc:.4f}% to {post_mil_acc:.4f}%.")
     
     def load_trials(self):
         if self.renew_trials or not os.path.exists(self.output_folder + "/trials.pkl"):
@@ -395,7 +417,7 @@ class Experiment:
         folder = f"{self.input_folder}/{sub_folder}"
         filepath = f"{folder}/{filename}.pkl"
         if self.renew_results or not os.path.exists(filepath):
-            print("...Starting analysis")
+            print("...Starting results computation")
             if not os.path.exists(folder):
                 os.makedirs(folder)
             corners = np.array([
@@ -413,7 +435,7 @@ class Experiment:
                 folder,
                 filename,
             )
-            print("...Finished analysis")
+            print("...Finished results computation")
         else:
             with open(filepath, "rb") as f:
                 self.results = pickle.load(f)
@@ -432,6 +454,36 @@ class Experiment:
 
     def save(self):
         pickle.dump(self, open(self.output_folder + "/experiment.pkl", "wb"))
+
+
+def get_experiment(**kwargs) -> Experiment:
+    if kwargs["experiment_id"] is not None:
+        return get_experiment_by_id(kwargs["experiment_id"])
+    elif kwargs["parent_folder"] is not None and kwargs["experiment_datetime"] is not None:
+        return get_experiment_by_time(kwargs["parent_folder"], kwargs["experiment_datetime"])
+    else:
+        raise ValueError(f"No valid arguments provided to find the experiment file: {kwargs}")
+
+
+def get_experiment_by_time(parent_folder,
+                   experiment_datetime) -> Experiment:
+    _, folder = get_data_folders(parent_folder, experiment_datetime)
+    if not os.path.exists(folder + "/experiment.pkl"):
+        raise FileNotFoundError(f"No experiment file found at {folder}")
+    else:
+        return pickle.load(open(folder + "/experiment.pkl", "rb"))
+
+def get_experiment_by_id(id) -> Experiment:
+    filepath = "pre_process/experiment_ids.csv"
+    if not os.path.exists(filepath):
+        raise FileNotFoundError("No experiment_ids.csv file found")
+    else:
+        df = pd.read_csv(filepath)
+        row = df.loc[df["id"] == id]
+        parent_folder = row["parent_folder"].iloc[0]
+        experiment_datetime = row["experiment_datetime"].iloc[0]
+
+        return get_experiment_by_time(parent_folder, experiment_datetime)
 
 
 if __name__ == "__main__":

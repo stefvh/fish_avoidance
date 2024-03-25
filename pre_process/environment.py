@@ -1,6 +1,6 @@
 import numpy as np
 
-from utils.maths import get_intersection_of_two_lines, get_min_distance_from_point_to_line
+from utils.maths.geometry import get_min_distance_from_point_to_line, get_intersection_of_two_lines
 import numpy as np
 
 class Environment:

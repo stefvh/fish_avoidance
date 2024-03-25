@@ -1,20 +1,14 @@
 import argparse
 
-def parser_default():
+def get_default_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-pf", "--parent_folder", type=str, default="June13_2")
-    parser.add_argument(
-        "-ed", "--experiment_datetime", type=str, default="20230613-165310"
-    )
+    parser.add_argument("-e", "--experiment_id", type=int)
+    parser.add_argument("-pf", "--parent_folder", type=str)
+    parser.add_argument("-ed", "--experiment_datetime", type=str)
 
     return parser
 
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-pf", "--parent_folder", type=str, default="June13_2")
-    parser.add_argument(
-        "-ed", "--experiment_datetime", type=str, default="20230613-165310"
-    )
-
+    parser = get_default_parser()
     args = parser.parse_args()
     return args
