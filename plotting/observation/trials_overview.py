@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -185,6 +186,11 @@ def run(experiment: Experiment):
     # sort the trial_ids based on the distance_list
     trial_ids = [x for _, x in sorted(zip(distance_list, trial_ids))]
 
+    output_folder = experiment.input_folder + "/plots"
+    sub_folder = "observation"
+    output_filename = "trials_overview.pdf"
+    if not os.path.exists(f"{output_folder}/{sub_folder}"):
+        os.makedirs(f"{output_folder}/{sub_folder}")
 
     plot_multipdf(
         len(trial_ids),
@@ -197,7 +203,7 @@ def run(experiment: Experiment):
             trial_id=trial_ids[i+j],
             results=results,
         ),
-        f"plotting/observation/trials_overview.pdf",
+        f"{output_folder}/{sub_folder}/{output_filename}",
     )
 
 if __name__ == "__main__":

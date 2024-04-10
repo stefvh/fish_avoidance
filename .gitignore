@@ -7,7 +7,6 @@ data/*
 *.json
 *.mp4
 *.pdf
-*.csv
 *.pkl
 
 # C extensions

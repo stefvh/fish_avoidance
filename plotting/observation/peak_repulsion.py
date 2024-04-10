@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from utils.parser import parse_args
 
@@ -116,6 +117,12 @@ def run(experiment: Experiment):
     results = results.merge(robot_states, on="frame_number", how="left")
     results = results.dropna(subset=["state"])
 
+    output_folder = experiment.input_folder + "/plots"
+    sub_folder = "observation"
+    output_filename = "peak_repulsion.pdf"
+    if not os.path.exists(f"{output_folder}/{sub_folder}"):
+        os.makedirs(f"{output_folder}/{sub_folder}")
+
     plot_multipdf(
         len(trial_ids),
         5,
@@ -127,7 +134,7 @@ def run(experiment: Experiment):
             trial_id=trial_ids[i+j],
             results=results,
         ),
-        f"plotting/hypotheses/peak_repulsion.pdf",
+        f"{output_folder}/{sub_folder}/{output_filename}",
     )
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -274,22 +275,27 @@ def run(experiment: Experiment):
     results = results.merge(robot_states, on="frame_number", how="left")
     results = results.dropna(subset=["state"])
 
-    select_trials_category_a(results)
+    # select_trials_category_a(results)
 
+    output_folder = experiment.input_folder + "/plots"
+    sub_folder = "observation"
+    output_filename = "trials_categorization.pdf"
+    if not os.path.exists(f"{output_folder}/{sub_folder}"):
+        os.makedirs(f"{output_folder}/{sub_folder}")
 
-    # plot_multipdf(
-    #     len(trial_ids),
-    #     5,
-    #     9,
-    #     lambda ax_row, i, j: plot_trial(
-    #         ax_row=ax_row,
-    #         i=i, 
-    #         j=j,
-    #         trial_id=trial_ids[i+j],
-    #         results=results,
-    #     ),
-    #     f"plotting/observation/trials_categorization.pdf",
-    # )
+    plot_multipdf(
+        len(trial_ids),
+        5,
+        9,
+        lambda ax_row, i, j: plot_trial(
+            ax_row=ax_row,
+            i=i, 
+            j=j,
+            trial_id=trial_ids[i+j],
+            results=results,
+        ),
+        f"{output_folder}/{sub_folder}/{output_filename}",
+    )
 
 if __name__ == "__main__":
     args = parse_args()
