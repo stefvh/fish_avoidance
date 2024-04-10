@@ -121,6 +121,49 @@ class Experiment:
         self.arena_xlim = (-50., 50.)
         self.arena_ylim = (-50., 50.)
 
+        self._align_data_props()
+    
+    def _align_data_props(self):
+        print("commander_frame_count:", self.robot_states["frame_number"].max())
+        print("tracking_frame_count:", self.original_frame_count)
+
+        foo = self.camera_filename.split("/")[-1].split(".")[0].split("CameraCapture")[1]
+        camera_start_datetime = datetime.datetime.strptime(foo[:-1], 
+                                                           "%Y-%m-%dT%H_%M_%S_%f")
+        camera_start_datetime -= datetime.timedelta(hours=2)
+        camera_start_datetime = camera_start_datetime.replace(tzinfo=datetime.timezone.utc)
+
+        data_start_datetime = self.robot_states["time"].iloc[0]
+
+        delta_datetime_start = camera_start_datetime - data_start_datetime
+        delta_frames_start = delta_datetime_start / datetime.timedelta(seconds=0.04)
+
+        delta_frames_start = -38
+
+        delta = abs(int(delta_frames_start))
+        print(delta_frames_start)
+
+        if delta_frames_start < 0:
+            # extend robot_states with state as NaN, but increasing frame_number for the first delta_frames_start
+            new_states = []
+            for i in range(delta):
+                new_states.append({
+                    "time": self.robot_states["time"].iloc[0] - datetime.timedelta(seconds=0.04 * (delta - i + 1)),
+                    "state": np.nan,
+                    "frame_number": i,
+                })
+            new_states = pd.DataFrame(new_states)
+            self.robot_states["frame_number"] = self.robot_states["frame_number"] + delta
+            self.robot_states = pd.concat([new_states, self.robot_states])
+
+            print(self.robot_states.head())
+            
+        elif delta_frames_start > 0:
+            # remove the first delta_frames_start rows from robot_states
+            self.robot_states = self.robot_states.iloc[delta:]
+        else:
+            pass
+
     def load_tracks(self):
         if self.renew_tracks or \
            not os.path.exists(self.output_folder + "/robot_poses.pkl") or \

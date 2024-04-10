@@ -67,12 +67,17 @@ def compute_results(
         {
             "robot_distance_batch": [],
             "fish_velocity_batch": [],
+            "fish_acceleration_batch": [],
             "fish_turn_batch": [],
             "fish_direction_batch": [],
             "robot_velocity_batch": [],
             "robot_acceleration_batch": [],
             "robot_angle_diff_batch": [],
             "robot_walls_alignments_batch": [],
+            "alpha_batch": [],
+            "beta_batch": [],
+            "alpha_clockwise_batch": [],
+            "beta_clockwise_batch": [],
         }
     )
     results.update(
@@ -80,6 +85,23 @@ def compute_results(
             "robot_distance_slopes": [],
             "fish_velocity_slopes": [],
             "robot_velocity_slopes": [],
+        }
+    )
+    results.update(
+        {
+            "fish_wall_category": [],
+            "robot_wall_category": [],
+        }
+    )
+    results.update(
+        {
+            "fish_distance_contributions": [],
+            "robot_distance_contributions": [],
+        }
+    )
+    results.update(
+        {
+            "fish_turn_1hz": [],
         }
     )
 
@@ -295,6 +317,19 @@ def compute_results(
                 ) / (batch * period)
         results["fish_velocity_batch"].extend(fish_velocity_batch.tolist())
 
+        fish_acceleration_batch = np.full(n_frames, np.nan)
+        for i in range(batch, n_frames - batch):
+            if (
+                np.isnan(fish_velocity_batch[i]).any()
+                or np.isnan(fish_velocity_batch[i + batch]).any()
+            ):
+                continue
+            else:
+                fish_acceleration_batch[i] = (
+                    fish_velocity_batch[i + batch] - fish_velocity_batch[i]
+                ) / (batch * period)
+        results["fish_acceleration_batch"].extend(fish_acceleration_batch.tolist())
+
         fish_turn_batch = np.full(n_frames, np.nan)
         for i in range(batch, n_frames - batch):
             if (
@@ -383,6 +418,48 @@ def compute_results(
         results["robot_walls_alignments_batch"].extend(robot_walls_alignments_batch)
         results["robot_walls_alignments_batch"].extend([[np.nan] * 4] * batch * 2)
 
+        alpha_batch = np.full(n_frames, np.nan)
+        alpha_clockwise_batch = np.full(n_frames, np.nan)
+        for i in range(batch, n_frames - batch):
+            if (
+                np.isnan(batch_fish_poses[i]).any()
+                or np.isnan(batch_robot_poses[i]).any()
+                or np.isnan(batch_fish_directions[i]).any()
+            ):
+                continue
+            else:
+                q_f =  batch_fish_directions[i]
+                q_fr = batch_fish_poses[i, :2] - batch_robot_poses[i, :2]
+                alpha_batch[i] = geometry.angle_between_vectors(
+                    q_f, q_fr
+                )
+                alpha_clockwise_batch[i] = geometry.vectors_angle(
+                    q_f, q_fr
+                )
+        results["alpha_batch"].extend(alpha_batch.tolist())
+        results["alpha_clockwise_batch"].extend(alpha_clockwise_batch.tolist())
+
+        beta_batch = np.full(n_frames, np.nan)
+        beta_clockwise_batch = np.full(n_frames, np.nan)
+        for i in range(batch, n_frames - batch):
+            if (
+                np.isnan(batch_robot_directions[i]).any()
+                or np.isnan(batch_robot_poses[i]).any()
+                or np.isnan(batch_fish_poses[i]).any()
+            ):
+                continue
+            else:
+                q_r =  batch_robot_directions[i]
+                q_fr = batch_fish_poses[i, :2] - batch_robot_poses[i, :2]
+                beta_batch[i] = geometry.angle_between_vectors(
+                    q_r, q_fr
+                )
+                beta_clockwise_batch[i] = geometry.vectors_angle(
+                    q_r, q_fr
+                )
+        results["beta_batch"].extend(beta_batch.tolist())
+        results["beta_clockwise_batch"].extend(beta_clockwise_batch.tolist())
+
         #######################################################################
         # Slopes
 
@@ -459,6 +536,93 @@ def compute_results(
                     robot_velocity, robot_angle_diff
                 )
         results["is_robot_chasing"].extend(is_robot_chasing.tolist())
+    
+        #######################################################################
+        # Wall categories
+        fish_wall_category = np.full(n_frames, np.nan)
+
+        for i in range(batch, n_frames - batch):
+            if (
+                np.isnan(batch_fish_poses[i]).any()
+            ):
+                continue
+            else:
+                fish_wall_distances, _ = environment.get_wall_distances_sorted(
+                    batch_fish_poses[i, :2]
+                )
+                fish_wall_category[i] = np.sum(fish_wall_distances < 8.5)
+        results["fish_wall_category"].extend(fish_wall_category.tolist())
+        
+        robot_wall_category = np.full(n_frames, np.nan)
+
+        for i in range(batch, n_frames - batch):
+            if (
+                np.isnan(batch_robot_directions[i]).any()
+            ):
+                continue
+            else:
+                robot_wall_distances, _ = environment.get_wall_distances_sorted(
+                    batch_robot_poses[i, :2]
+                )
+                robot_wall_category[i] = np.sum(robot_wall_distances < 8.5)
+        results["robot_wall_category"].extend(robot_wall_category.tolist())
+
+        #######################################################################
+        # Distance contributions
+        fish_distance_contributions = np.full(n_frames, np.nan)
+        robot_distance_contributions = np.full(n_frames, np.nan)
+
+        _step = 1
+        for i in range(batch, n_frames - batch - _step):
+            if (
+                np.isnan(batch_fish_poses[i]).any()
+                or np.isnan(batch_robot_poses[i]).any()
+                or np.isnan(batch_fish_poses[i + _step]).any()
+                or np.isnan(batch_robot_poses[i + _step]).any()
+            ):
+                continue
+            else:
+                _d = np.linalg.norm(
+                    batch_fish_poses[i, :2] - batch_robot_poses[i, :2]
+                )
+                _d_f = np.linalg.norm(
+                    batch_fish_poses[i + _step, :2] - batch_robot_poses[i, :2]
+                )
+                _d_r = np.linalg.norm(
+                    batch_fish_poses[i, :2] - batch_robot_poses[i + _step, :2]
+                )
+                _c_f = _d_f / _d
+                _c_r = _d_r / _d
+                c_f = _c_f / (_c_f + _c_r)
+                c_r = _c_r / (_c_f + _c_r)
+                fish_distance_contributions[i] = _c_f
+                robot_distance_contributions[i] = _c_r
+        results["fish_distance_contributions"].extend(fish_distance_contributions.tolist())
+        results["robot_distance_contributions"].extend(robot_distance_contributions.tolist())
+
+        #######################################################################
+        # 1 Hz
+        fish_turn_1hz = np.full(n_frames, np.nan)
+        _step = 25
+        for i in range(_step, n_frames - _step - batch):
+            if (
+                np.isnan(batch_fish_poses[i]).any()
+                or np.isnan(batch_fish_poses[i - batch]).any()
+                or np.isnan(batch_fish_poses[i + _step]).any()
+                or np.isnan(batch_fish_poses[i + _step + batch]).any()
+            ):
+                continue
+            else:
+                angle = np.arctan2(
+                    batch_fish_poses[i, 1] - batch_fish_poses[i - batch, 1],
+                    batch_fish_poses[i, 0] - batch_fish_poses[i - batch, 0],
+                )
+                angle2 = np.arctan2(
+                    batch_fish_poses[i + _step + batch, 1] - batch_fish_poses[i + _step, 1],
+                    batch_fish_poses[i + _step + batch, 0] - batch_fish_poses[i + _step, 0],
+                )
+                fish_turn_1hz[i] = geometry.diff_angles(angle, angle2)
+        results["fish_turn_1hz"].extend(fish_turn_1hz.tolist())
 
     results = pd.DataFrame(results)
     results.to_pickle(f"{output_folder}/{output_filename}.pkl")

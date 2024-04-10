@@ -105,7 +105,7 @@ def plot_trial(ax_row, i, j, trial_id, results):
 
 
 def run(experiment: Experiment):
-    filepath = f"plotting/hypotheses/peak_repulsion_ids/{experiment.experiment_datetime}.csv"
+    filepath = f"plotting/observation/peak_repulsion_ids/{experiment.experiment_datetime}.csv"
     cv_input = pd.read_csv(filepath)
     trial_ids = list(cv_input["trial_id"])
 

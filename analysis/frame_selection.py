@@ -1,7 +1,31 @@
+import numpy as np
+import pandas as pd
+from pre_process.experiment import Experiment
 
-def get_peak_frames(results):
+def get_filtered_frames(experiment: Experiment, trials_filter: str):
+    if trials_filter == "all":
+        frame_numbers = range(
+            experiment.trials.iloc[0]["start_frame"],
+            experiment.trials.iloc[-1]["end_frame"],
+        )
+    elif trials_filter == "peak_repulsion":
+        filepath = f"plotting/observation/peak_repulsion_ids/{experiment.experiment_datetime}.csv"
+        cv_input = pd.read_csv(filepath)
+        trial_ids = list(cv_input["trial_id"])
+
+        frame_numbers = []
+        for trial_id in trial_ids:
+            trial = experiment.trials[experiment.trials["trial_id"] == trial_id].iloc[0]
+            frame_numbers += list(range(trial["start_frame"], trial["end_frame"]))
+    else:
+        raise ValueError(f"Invalid trials_filter: {trials_filter}")
+    return frame_numbers
+
+
+def get_distance_dip_frames(results, frame_window):
     # For each trial_id in results, find the highest frame number where state in "APPROACHING*"
-    peak_frames = []
+    dip_frames = []
+    dip_values = []
 
     for trial_id in results["trial_id"].unique():
         trial_results = results[results["trial_id"] == trial_id]
@@ -31,10 +55,11 @@ def get_peak_frames(results):
                 t_frames.append(trial_results["frame_number"][dip_idx + i])
                 break
 
-        frame_window = 10
+        frame_window = frame_window   
         t_min = min(t_frames)
         t_max = max(t_frames)
 
-        peak_frames += list(range(t_min - frame_window, t_max + frame_window))
+        dip_frames.append(list(range(t_min - frame_window, t_max + frame_window)))
+        dip_values.append(dip_distance)
 
-    return peak_frames
+    return dip_frames, dip_values

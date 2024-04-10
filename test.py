@@ -27,13 +27,31 @@ from priors.foldering import get_data_folders
 
 # read experiment
 
-parent_folder = "June13_2"
+# parent_folder = "June13_2"
 
-experiment_datetime = "20230613-165310"
+# experiment_datetime = "20230613-165310"
 
-folder, exp_folder = get_data_folders(parent_folder, experiment_datetime)
-experiment = pickle.load(open(exp_folder + "/experiment.pkl", "rb"))
+# folder, exp_folder = get_data_folders(parent_folder, experiment_datetime)
+# experiment = pickle.load(open(exp_folder + "/experiment.pkl", "rb"))
 
-# print(experiment.trials)
+# # print(experiment.trials)
 
-print(experiment.robot_poses.shape)
+# print(experiment.robot_poses.shape)
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Example turn angle data (replace this with your actual data)
+turn_angles = np.random.uniform(-180, 180, size=1000)
+
+# Convert turn angles to radians
+angles_rad = np.radians(turn_angles)
+
+# Plot turn angles in polar coordinates
+plt.figure(figsize=(8, 8))
+ax = plt.subplot(111, projection='polar')
+ax.hist(angles_rad, bins=50, color='skyblue', alpha=0.7)
+ax.set_theta_zero_location('N')
+ax.set_theta_direction(-1)
+plt.title('Turn Angle Distribution (Polar Plot)')
+plt.show()

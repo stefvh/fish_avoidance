@@ -7,6 +7,16 @@ def diff_angles(angle1, angle2):
 def vector_angle(v, w):
     return np.arctan2(w[1] - v[1], w[0] - v[0])
 
+def vectors_angle(v, w):
+    angle = np.arctan2(v[1], v[0]) - np.arctan2(w[1], w[0])
+
+    if angle > np.pi:
+        angle -= 2 * np.pi
+    elif angle <= -np.pi:
+        angle += 2 * np.pi
+
+    return angle
+
 def angle_between_vectors(v, w):
     return np.arccos(np.dot(v, w) / (np.linalg.norm(v) * np.linalg.norm(w)))
 

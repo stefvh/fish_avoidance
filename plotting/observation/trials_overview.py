@@ -44,6 +44,9 @@ def plot_trial(ax_row, i, j, trial_id, results):
     max_robot_distance = results["robot_distance"].max()
     ax.set_ylim(0, max_robot_distance)
 
+    ax.axhline(y=2, color="black", linestyle="--")
+    ax.axhline(y=8, color="black", linestyle="--")
+
     annotate_row(ax, trial_results["trial_id"].iloc[0], min_robot_distance)
 
     # fps = experiment.frequency
@@ -85,10 +88,10 @@ def plot_trial(ax_row, i, j, trial_id, results):
     max_fish_velocity = results["fish_velocity_batch"].max()
     ax.set_ylim(0, max_fish_velocity)
 
-    fps = experiment.frequency
-    peaks, peak_props = find_peaks(trial_results["fish_velocity_batch"], distance=fps, height=5, prominence=5)
-    print(f"Trial {trial_id} peak props: {peak_props}")
-    ax.plot(peaks, trial_results["fish_velocity_batch"].iloc[peaks], "x")
+    # fps = experiment.frequency
+    # peaks, peak_props = find_peaks(trial_results["fish_velocity_batch"], distance=fps, height=5, prominence=5)
+    # print(f"Trial {trial_id} peak props: {peak_props}")
+    # ax.plot(peaks, trial_results["fish_velocity_batch"].iloc[peaks], "x")
 
     column +=1
 
@@ -137,19 +140,32 @@ def plot_trial(ax_row, i, j, trial_id, results):
 
     column +=1
 
-    # Plot robot velocity slope
+    # Plot fish acceleration
     ax = ax_row[column]
-    ax.plot(relative_frame_numbers, trial_results["robot_velocity_slopes"])
+    ax.plot(relative_frame_numbers, trial_results["fish_acceleration_batch"])
     if j ==0:
-        ax.set_title("Robot Velocity Slope")
+        ax.set_title("Fish Acceleration")
     ax.set_xlabel("Frame Number")
-    ax.set_ylabel("Slope (cm/s)")
+    ax.set_ylabel("Acceleration (cm/s2)")
 
-    max_robot_velocity_slope = results["robot_velocity_slopes"].max()
-    min_robot_velocity_slope = results["robot_velocity_slopes"].min()
-    ax.set_ylim(min_robot_velocity_slope, max_robot_velocity_slope)
+    max_fish_acceleration = results["fish_acceleration_batch"].max()
+    ax.set_ylim(0, max_fish_acceleration)
 
     column +=1
+
+    # # Plot robot velocity slope
+    # ax = ax_row[column]
+    # ax.plot(relative_frame_numbers, trial_results["robot_velocity_slopes"])
+    # if j ==0:
+    #     ax.set_title("Robot Velocity Slope")
+    # ax.set_xlabel("Frame Number")
+    # ax.set_ylabel("Slope (cm/s)")
+
+    # max_robot_velocity_slope = results["robot_velocity_slopes"].max()
+    # min_robot_velocity_slope = results["robot_velocity_slopes"].min()
+    # ax.set_ylim(min_robot_velocity_slope, max_robot_velocity_slope)
+
+    # column +=1
 
 
 def run(experiment: Experiment):
@@ -181,7 +197,7 @@ def run(experiment: Experiment):
             trial_id=trial_ids[i+j],
             results=results,
         ),
-        f"plotting/hypotheses/trials_overview.pdf",
+        f"plotting/observation/trials_overview.pdf",
     )
 
 if __name__ == "__main__":
