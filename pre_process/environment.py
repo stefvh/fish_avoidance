@@ -8,7 +8,7 @@ class Environment:
                  wall_corners) -> None:
         self.wall_corners = wall_corners
     
-    def get_wall_distances_sorted(
+    def get_wall_distances(
         self,
         entity_position,
     ):
@@ -20,7 +20,13 @@ class Environment:
                 for i in range(4)
             ]
         )
-
+        return distances
+    
+    def get_wall_distances_sorted(
+        self,
+        entity_position,
+    ):
+        distances = self.get_wall_distances(entity_position)
         return np.sort(distances), np.argsort(distances)
     
     def get_wall_vector_by_index(self, index):

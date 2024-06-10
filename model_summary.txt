@@ -1,0 +1,22 @@
+Analysis Completed Successfully
+==============================
+
+Model Summary:
+
+Call:
+lm(formula = speed_fish ~ distance, data = df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-6.331 -3.477 -0.562  2.930 53.580 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 5.8876288  0.0285057 206.542  < 2e-16 ***
+distance    0.0042254  0.0009865   4.283 1.84e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 4.051 on 82368 degrees of freedom
+Multiple R-squared:  0.0002227,	Adjusted R-squared:  0.0002105 
+F-statistic: 18.35 on 1 and 82368 DF,  p-value: 1.845e-05

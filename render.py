@@ -3,7 +3,7 @@ import pickle
 
 from priors.foldering import get_data_folders
 import post_process.rendering as rendering
-from pre_process.experiment import Experiment
+from core.experiment import Experiment
 
 
 def parse_args():

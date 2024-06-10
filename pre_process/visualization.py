@@ -129,10 +129,10 @@ def visualize(
         )
 
         # Draw robot and fish positions, if positions are not np.nan
-        if not np.isnan(robot_positions[frame_number]).any():
+        if frame_number < robot_positions.shape[0] and not np.isnan(robot_positions[frame_number]).any():
             x, y = rescale_position(robot_positions[frame_number])
             cv2.circle(frame, (int(x), int(y)), 6, color_robot, 1)
-        if not np.isnan(fish_positions[frame_number]).any():
+        if frame_number < fish_positions.shape[0] and not np.isnan(fish_positions[frame_number]).any():
             x, y = rescale_position(fish_positions[frame_number])
             cv2.circle(frame, (int(x), int(y)), 6, color_fish, 1)
 

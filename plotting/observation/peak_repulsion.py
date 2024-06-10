@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from utils.parser import parse_args
 
-from pre_process.experiment import Experiment, get_experiment
+from core.experiment import Experiment, get_experiment
 from utils.plotter import plot_multipdf
 
 def annotate_row(ax, trial_id, min_robot_distance):

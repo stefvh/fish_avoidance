@@ -9,7 +9,7 @@ from matplotlib import rc
 #     'text.latex.preamble':r'\usepackage{xcolor}'  r'\usepackage{amsfonts}' r'\usepackage{amsmath}'
 # })
 
-from pre_process.experiment import Experiment
+from core.experiment import Experiment
 
 
 def _extend_wall(a, b, d_x):

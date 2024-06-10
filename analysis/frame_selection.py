@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from pre_process.experiment import Experiment
+from core.experiment import Experiment
 
 def get_filtered_frames(experiment: Experiment, trials_filter: str):
     if trials_filter == "all":

@@ -6,6 +6,7 @@ import utils.maths.geometry as geometry
 
 from pre_process.environment import Environment
 import post_process.scenarios as scenarios
+import post_process.metrics as metrics
 
 
 # def n_step_nan_check(arr : np.ndarray, i: int, n_step : int):
@@ -50,6 +51,7 @@ def compute_results(
     results = {
         "trial_id": [],
         "frame_number": [],
+        "intra_trial_frame_number": [],
         "robot_distance": [],
         "wall_distances": [],
         "n_obstructed_walls": [],
@@ -104,6 +106,11 @@ def compute_results(
             "fish_turn_1hz": [],
         }
     )
+    results.update(
+        {
+            "robot_fish_follow_metric": [],
+        }
+    )
 
     for trial_id, trial in trials.iterrows():
         start_frame = trial["start_frame"]
@@ -114,6 +121,7 @@ def compute_results(
         n_frames = end_frame - start_frame
         results["trial_id"].extend([trial_id] * n_frames)
         results["frame_number"].extend(range(start_frame, end_frame))
+        results["intra_trial_frame_number"].extend(range(n_frames))
 
         #######################################################################
         robot_distances = np.full(n_frames, np.nan)
@@ -240,7 +248,7 @@ def compute_results(
                     robot_angle_diff[i] = abs(geometry.diff_angles(angle, robot_angle))
             results[f"robot_angle_diff_n={n_step}"].extend(robot_angle_diff.tolist())
 
-            robot_walls_alignments = []
+            robot_walls_alignments = np.full((n_frames, 4), np.nan)
             for i in range(n_frames - n_step):
                 trp_b, trp_n_step = n_step_nan_check(trial_robot_poses, i, n_step)
                 if (
@@ -248,23 +256,17 @@ def compute_results(
                     or trp_b  # np.isnan(trial_robot_poses[i + n_step]).any()
                     or np.isnan(wall_sorted_indexes[i]).any()
                 ):
-                    robot_walls_alignments.append([np.nan] * 4)
+                    continue
                 else:
-                    _robot_wall_aligments = []
-                    for wall_index in wall_sorted_indexes[i]:
+                    for j, wall_index in enumerate(wall_sorted_indexes[i]):
                         robot_vector = (
                             trial_robot_poses[i + trp_n_step, :2]
                             - trial_robot_poses[i, :2]
                         )
                         wall_vector = environment.get_wall_vector_by_index(wall_index)
-                        _robot_wall_aligments.append(
-                            geometry.angle_between_vectors(robot_vector, wall_vector)
-                        )
-                    robot_walls_alignments.append(_robot_wall_aligments)
-            results[f"robot_walls_alignments_n={n_step}"].extend(robot_walls_alignments)
-            results[f"robot_walls_alignments_n={n_step}"].extend(
-                [[np.nan] * 4] * n_step
-            )
+                        rwa = geometry.angle_between_vectors(robot_vector, wall_vector)
+                        robot_walls_alignments[i, j] = rwa
+            results[f"robot_walls_alignments_n={n_step}"].extend(robot_walls_alignments.tolist())
 
         #######################################################################
         # Batch
@@ -398,25 +400,21 @@ def compute_results(
                 robot_angle_diff_batch[i] = abs(geometry.diff_angles(angle, robot_angle))
         results["robot_angle_diff_batch"].extend(robot_angle_diff_batch.tolist())
 
-        robot_walls_alignments_batch = []
+        robot_walls_alignments_batch = np.full((n_frames, 4), np.nan)
         for i in range(batch, n_frames - batch):
             if (
                 np.isnan(batch_robot_directions[i]).any()
                 or np.isnan(wall_sorted_indexes).any()
             ):
-                robot_walls_alignments_batch.append([np.nan] * 4)
+                continue
             else:
-                _robot_wall_aligments = []
-                for wall_index in wall_sorted_indexes[i]:
+                for j, wall_index in enumerate(wall_sorted_indexes[i]):
                     wall_vector = environment.get_wall_vector_by_index(wall_index)
-                    _robot_wall_aligments.append(
-                        geometry.angle_between_vectors(
+                    rwa = geometry.angle_between_vectors(
                             batch_robot_directions[i], wall_vector
                         )
-                    )
-                robot_walls_alignments_batch.append(_robot_wall_aligments)
-        results["robot_walls_alignments_batch"].extend(robot_walls_alignments_batch)
-        results["robot_walls_alignments_batch"].extend([[np.nan] * 4] * batch * 2)
+                    robot_walls_alignments_batch[i, j] = rwa
+        results["robot_walls_alignments_batch"].extend(robot_walls_alignments_batch.tolist())
 
         alpha_batch = np.full(n_frames, np.nan)
         alpha_clockwise_batch = np.full(n_frames, np.nan)
@@ -624,6 +622,23 @@ def compute_results(
                 fish_turn_1hz[i] = geometry.diff_angles(angle, angle2)
         results["fish_turn_1hz"].extend(fish_turn_1hz.tolist())
 
+        #######################################################################
+        # Follow metric
+        robot_fish_follow_metric = np.full(n_frames, np.nan)
+        _step = 10
+        for i in range(batch, n_frames - batch):
+            if (
+                np.isnan(batch_fish_poses[i:i + _step]).any()
+                or np.isnan(batch_robot_poses[i:i + _step]).any()
+            ):
+                continue
+            else:
+                rffm = metrics.calculate_follow(
+                    batch_robot_poses[i:i + _step], batch_fish_poses[i:i + _step]
+                )
+                robot_fish_follow_metric[i] = np.mean(rffm)
+        results["robot_fish_follow_metric"].extend(robot_fish_follow_metric.tolist())
+    
     results = pd.DataFrame(results)
     results.to_pickle(f"{output_folder}/{output_filename}.pkl")
 

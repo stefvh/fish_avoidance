@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from pre_process.experiment import Experiment, get_experiment
+from core.experiment import Experiment, get_experiment
 
 from utils.parser import parse_args
 from utils.plotter import plot_multipdf

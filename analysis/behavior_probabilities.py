@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-from pre_process.experiment import Experiment, get_experiment
+from core.experiment import Experiment, get_experiment
 
 from utils.parser import get_default_parser
 from utils.maths.probabilities import (

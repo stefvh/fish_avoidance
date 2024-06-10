@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from pre_process.experiment import Experiment, get_experiment
+from plotting.observation.dist_follow_grouping import extend_group
+from post_process.feature_extraction import extract_approach_window_frame_by_follow_metric
+from core.experiment import Experiment, get_experiment
 
 from utils.parser import parse_args
 from utils.plotter import plot_multipdf
@@ -73,6 +75,16 @@ def plot_trial(ax_row, i, j, trial_id, results):
     ax.set_xlabel("Frame Number")
     ax.set_ylabel("State")
 
+    ax2 = ax.twinx()
+    rfn = relative_frame_numbers[::5]
+    tr = trial_results["robot_velocity_batch"][::5]
+    ax2.plot(rfn, tr, color="red")
+
+    window_frame = extract_approach_window_frame_by_follow_metric(trial_results)
+    if window_frame[0] is not None and window_frame[1] is not None:
+        ax.axvline(x=window_frame[0], color="black", linestyle="--")
+        ax.axvline(x=window_frame[1], color="black", linestyle="--")
+
     column +=1
 
     # Plot robot velocity
@@ -89,7 +101,66 @@ def plot_trial(ax_row, i, j, trial_id, results):
     max_robot_velocity = results["robot_velocity_batch"].max()
     ax.set_ylim(0, max_robot_velocity)
 
+    ax2 = ax.twinx()
+    yn = trial_results["robot_fish_follow_metric"]
+    max_yn = results["robot_fish_follow_metric"].max()
+    min_yn = results["robot_fish_follow_metric"].min()
+    ax2.set_ylim(min_yn, max_yn)
+    ax2.plot(relative_frame_numbers, yn, color="red")
+    ax2.axhline(y=0, color="black", linestyle="--")
+
+    if window_frame[0] is not None and window_frame[1] is not None:
+        ax.axvline(x=window_frame[0], color="black", linestyle="--")
+        ax.axvline(x=window_frame[1], color="black", linestyle="--")
+
     column +=1
+
+    # Plot fish velocity
+    ax = ax_row[column]
+    ax.plot(relative_frame_numbers, trial_results["fish_velocity_batch"])
+    if j ==0:
+        ax.set_title("Fish Velocity")
+    ax.set_xlabel("Frame Number")
+    ax.set_ylabel("Velocity (cm/s)")
+
+    max_fish_velocity = results["fish_velocity_batch"].max()
+    ax.set_ylim(0, max_fish_velocity)
+
+    ax2 = ax.twinx()
+    yn = trial_results["robot_fish_follow_metric"]
+    max_yn = results["robot_fish_follow_metric"].max()
+    min_yn = results["robot_fish_follow_metric"].min()
+    ax2.set_ylim(min_yn, max_yn)
+    ax2.plot(relative_frame_numbers, yn, color="red")
+    ax2.axhline(y=0, color="black", linestyle="--")
+
+    # if window_frame[0] is not None and window_frame[1] is not None:
+    #     ax.axvline(x=window_frame[0], color="black", linestyle="--")
+    #     ax.axvline(x=window_frame[1], color="black", linestyle="--")
+    
+    group_2 = results[(results["robot_distance"] < 6) & 
+                      (results["robot_fish_follow_metric"] > 0)]
+    group_2 = extend_group(results, group_2)
+
+    # highlight the areas of group_2 frame_numbers using axvspan for consecutive frame_numbers
+    start = None
+    for i in range(len(group_2["frame_number"])):
+        if group_2["frame_number"].iloc[i] not in trial_results["frame_number"].values:
+            continue
+        if start is None:
+            start = group_2["frame_number"].iloc[i]
+            end = start
+        else:
+            if group_2["frame_number"].iloc[i] == end + 1:
+                end = group_2["frame_number"].iloc[i]
+            else:
+                ax.axvspan(start - trial_results["frame_number"].min(), end - trial_results["frame_number"].min(), color='orange', alpha=0.5)
+                start = group_2["frame_number"].iloc[i]
+                end = start
+    if start is not None and start != end:
+        ax.axvspan(start - trial_results["frame_number"].min(), end - trial_results["frame_number"].min(), color='orange', alpha=0.5)
+    
+    column += 1
 
     # Plot alpha
     ax = ax_row[column]
@@ -129,23 +200,10 @@ def plot_trial(ax_row, i, j, trial_id, results):
 
     column +=1
 
-    # Plot fish velocity
-    ax = ax_row[column]
-    ax.plot(relative_frame_numbers, trial_results["fish_velocity_batch"])
-    if j ==0:
-        ax.set_title("Fish Velocity")
-    ax.set_xlabel("Frame Number")
-    ax.set_ylabel("Velocity (cm/s)")
-
-    max_fish_velocity = results["fish_velocity_batch"].max()
-    ax.set_ylim(0, max_fish_velocity)
-
     # fps = experiment.frequency
     # peaks, peak_props = find_peaks(trial_results["fish_velocity_batch"], distance=fps, height=5, prominence=5)
     # print(f"Trial {trial_id} peak props: {peak_props}")
     # ax.plot(peaks, trial_results["fish_velocity_batch"].iloc[peaks], "x")
-
-    column +=1
 
     # Plot fish acceleration
     ax = ax_row[column]
@@ -269,11 +327,6 @@ def run(experiment: Experiment):
     wall_category_list = [wall_category_list[i] for i in range(len(trial_ids)) if not np.isnan(wall_category_list[i])]
     # sort the trial_ids based on the distance_list
     trial_ids = [x for _, x in sorted(zip(wall_category_list, trial_ids))]
-
-
-    robot_states = experiment.robot_states
-    results = results.merge(robot_states, on="frame_number", how="left")
-    results = results.dropna(subset=["state"])
 
     # select_trials_category_a(results)
 

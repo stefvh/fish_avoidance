@@ -4,7 +4,7 @@ import os
 from matplotlib import pyplot as plt
 import numpy as np
 from analysis.frame_selection import get_distance_dip_frames, get_filtered_frames
-from pre_process.experiment import Experiment, get_experiment
+from core.experiment import Experiment, get_experiment
 from utils.parser import get_default_parser
 
 from sklearn.model_selection import train_test_split

@@ -1,43 +1,51 @@
-import argparse
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
-from pre_process.experiment import Experiment, get_experiment
+if TYPE_CHECKING:
+    from core.experiment import Experiment
+
+import numpy as np
+
 from utils.parser import get_default_parser
 
 def parse_args():
     parser = get_default_parser()
-    parser.add_argument("-bf", "--begin_fn", type=int)
+    parser.add_argument("-sf", "--begin_fn", type=int)
     parser.add_argument("-ef", "--end_fn", type=int)
-    parser.add_argument("-bs", "--begin_str", type=str)
+    parser.add_argument("-ss", "--begin_str", type=str)
     parser.add_argument("-es", "--end_str", type=str)
     return parser.parse_args()
 
 
-def from_frame_number(experiment: Experiment, begin: int, end: int):
-    begin_robot_pose = experiment.robot_poses[begin]    # np.array([x, y, theta])
-    end_robot_pose = experiment.robot_poses[end]        # np.array([x, y, theta])
+def suggest_poses_from_to_frame(poses: np.ndarray, begin: int, end: int, type: str):
+    begin_pose = poses[begin]
 
-    new_robot_poses = []
+    new_poses = []
+    str_new_poses = []
     for frame in range(begin, end + 1):
         # interpolate the position
-        x = begin_robot_pose[0] + (end_robot_pose[0] - begin_robot_pose[0]) * (frame - begin) / (end - begin)
-        y = begin_robot_pose[1] + (end_robot_pose[1] - begin_robot_pose[1]) * (frame - begin) / (end - begin)
-        theta = begin_robot_pose[2] + (end_robot_pose[2] - begin_robot_pose[2]) * (frame - begin) / (end - begin)
-        new_robot_poses.append(f"{frame},\"robot\",{x},{y},{theta}")
+        x = begin_pose[0] + (poses[end][0] - begin_pose[0]) * (frame - begin) / (end - begin)
+        y = begin_pose[1] + (poses[end][1] - begin_pose[1]) * (frame - begin) / (end - begin)
+        theta = begin_pose[2] + (poses[end][2] - begin_pose[2]) * (frame - begin) / (end - begin)
+        new_poses.append([x, y, theta])
+        if type == "robot":
+            str_new_poses.append(f"{frame},\"robot\",{x},{y},{theta}")
+        elif type == "fish":
+            str_new_poses.append(f"{frame},\"fish\",{x},{y},{theta}")
+        else:
+            pass
     
-    print("\n".join(new_robot_poses))
+    return np.array(new_poses), str_new_poses
+
+def from_frame_number(experiment: Experiment, begin: int, end: int, out_print: bool):
+    new_robot_poses, str_new_robot_poses = suggest_poses_from_to_frame(experiment.robot_poses, begin, end, "robot")
+    new_fish_poses, str_new_fish_poses = suggest_poses_from_to_frame(experiment.fish_poses, begin, end, "fish")
     
-    begin_fish_pose = experiment.fish_poses[begin]  # np.array([x, y, theta])
-    end_fish_pose = experiment.fish_poses[end]      # np.array([x, y, theta])
+    if out_print:
+        print("\n".join(str_new_robot_poses))
+        print("\n".join(str_new_fish_poses))
 
-    new_fish_poses = []
-    for frame in range(begin, end + 1):
-        # interpolate the position
-        x = begin_fish_pose[0] + (end_fish_pose[0] - begin_fish_pose[0]) * (frame - begin) / (end - begin)
-        y = begin_fish_pose[1] + (end_fish_pose[1] - begin_fish_pose[1]) * (frame - begin) / (end - begin)
-        theta = begin_fish_pose[2] + (end_fish_pose[2] - begin_fish_pose[2]) * (frame - begin) / (end - begin)
-        new_fish_poses.append(f"{frame},\"fish\",{x},{y},{theta}")
-
-    print("\n".join(new_fish_poses))
+    return np.array(new_robot_poses), np.array(new_fish_poses)
 
 
 def from_string(begin: str, end: str):
@@ -61,14 +69,17 @@ def from_string(begin: str, end: str):
     
     print("\n".join(new_poses))
 
+    return new_poses
+
 
 if __name__ == "__main__":
     args = parse_args()
     if args.begin_fn and args.end_fn:
+        from core.experiment import Experiment, get_experiment
         experiment = get_experiment(**vars(args))
         if not experiment:
             raise ValueError("Experiment not found: ", **vars(args))
-        from_frame_number(experiment, args.begin_fn, args.end_fn)
+        from_frame_number(experiment, args.begin_fn, args.end_fn, True)
     elif args.begin_str and args.end_str:
         from_string(args.begin_str, args.end_str)
     else:
