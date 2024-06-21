@@ -30,17 +30,21 @@ class RelativeQuantities:
         df["x_fr_n"] = df["x_fr"] / df["distance"]
         df["y_fr_n"] = df["y_fr"] / df["distance"]
 
-        # Calculate approach velocity (projection of robot's velocity onto the relative position vector)
+        # Calculate robot approach velocity (projection of robot's velocity onto the relative position vector)
         df["apv"] = df["dx_robot"] * df["x_fr_n"] + df["dy_robot"] * df["y_fr_n"]
         df["cos_apv"] = df["apv"] / df["speed_robot"]
 
-        # Calculate approach velocity over multiple frames
+        # Calculate robot approach velocity over multiple frames
         df[f"apv_n={self.window_size}"] = (
             df["apv"].rolling(window=self.window_size, min_periods=1).mean()
         )
         df[f"cos_apv_n={self.window_size}"] = (
             df["cos_apv"].rolling(window=self.window_size, min_periods=1).mean()
         )
+
+        # Calculate fish retreat velocity (projection of fish's velocity onto the relative position vector)
+        df["rev"] = df["dx_fish"] * df["x_fr_n"] + df["dy_fish"] * df["y_fr_n"]
+        df["cos_rev"] = df["rev"] / df["speed_fish"]
 
         return df
 
@@ -50,6 +54,8 @@ class RelativeQuantities:
         )
         input["segment"] = input["segment_robot"]
         input = input.drop(columns=["segment_fish", "segment_robot"])
+        input["time"] = input["frame"] - input["frame"].min() + 1
+        input["time_sec"] = input["time"] * self.time_step
 
         segments = input["segment"].dropna().unique()
         segment_dfs = []

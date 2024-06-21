@@ -8,6 +8,7 @@ data/*
 *.mp4
 *.pdf
 *.pkl
+core/*.csv
 
 # C extensions
 *.so

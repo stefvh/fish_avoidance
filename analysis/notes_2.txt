@@ -1,0 +1,84 @@
+GENERAL PROBLEMS WITH THE EXPERIMENT DESIGN
+-------------------------------------------
+
+- The "treatment" is inconsistent. Here our treatment is the behavior of the robot.
+- No "control group". No data when the fish is alone in the tank, without a robot.
+
+WHAT I HAVE
+-----------
+
+(1) "Robot proximity influences behavior of the fish (velocity and turn)"
+Significant results of fixed effects model (and linear mixed model too), where
+speed_fish ~ beta * distance 
+where beta from [-0.006, -0.1] depending on the family distribution used in the model.
+
+WHAT I SEE POTENTIALLY AS A RESULTS
+-----------------------------------
+
+(2) "Fish moves away from the robot, when [conditions X] occur, using minimum energy"
+-> "Using minimum energy" means that; 
+    If the fish was already moving in the direction opposite of the robot, it doesn't turn.
+    Otherwise, turn.
+
+(2-) Simplify first: "Fish moves away from the robot, when [conditions X]"
+How do we test this? -> Regression? Y ~ B*X
+
+Response variables (Y_continuous):
+    - Fish speed (continuous in [0, ...])
+    - Fish cosinus of retreat vector "cos(vec_ret)" (continuous in [-1, 1])
+
+Notes on Binarization of Response variables (Y_binary):
+    - Fish speed:
+        If fish_speed < THRESHOLD => Fish is stationary
+        Otherwise => Fish is moving
+    - Fish cos of retreat vector:
+        If cos(vec_ret) > 0 => Moving away from robot
+        Otherwise => Moving towards robot
+
+Predictor variables (X):
+    - Robot-fish distance
+    - Robot speed
+    - Interaction : robot_speed / distance
+    - Robot cosinus of approach vector "cos(vec_app)"
+    - Fish distance to the closest wall
+    - Fish orientation relative to the robot
+        E.g. is the fish facing the robot directly?
+
+Considerations/Problems:
+    * Time-delay
+        - Y_{t+delta} ~ B*X_{t}
+        - For predictor variables of time t, the response should be modeled at a later time point t + DELTA_T
+        - How to decide on DELTA_T?
+    * Binarization
+        - How to decide on the THRESHOLD for fish_speed
+    * Predictor variables
+        - For the last variable "Fish orientation relative to the robot",
+        How well can we rely on the orientation to be correctly tracked?
+        Should we use motion of direction as estimate of the orientation; then we can use cos(vec_ret)
+            E.g. if cos(vec_ret) = -1 -> The fish is facing the robot directly
+    * "Linear" --> What of other distributions
+
+? What if we filter the data to only have time-points/window of "responses" in the fish behavior:
+-> Only use time points where for example acceleration happens
+
+and see they have correlate with X variables ?
+
+
+-------------------
+
+HYPOTHESIS: "Fish moves away from the robot, when [conditions X], using minimum energy"
+
+
+
+Response of the fish ?
+-> When would this happen?
+How to measure/catch it?
+
+--> ??? Perception range of guppies
+
+Different fish reactions:
+    Evasion → (Stationary and then) rush away --> Acceleration present
+    Careful exploration → Evading while moving --> No significant change in the current velocity / orientation
+    Freezing → Stay stationary --> No movement
+
+=> Label manually, 
