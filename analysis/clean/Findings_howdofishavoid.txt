@@ -1,0 +1,3 @@
+- Max turn in trajectories
+    1. The density plot shows that the fish mostly doesn't turn. (Log-normal like distribution)
+    2. 

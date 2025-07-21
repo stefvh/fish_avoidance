@@ -23,9 +23,20 @@ WHAT I SEE POTENTIALLY AS A RESULTS
 (2-) Simplify first: "Fish moves away from the robot, when [conditions X]"
 How do we test this? -> Regression? Y ~ B*X
 
-Response variables (Y_continuous):
+Response variables (Y_{t+D}):
     - Fish speed (continuous in [0, ...])
+    - Fish acceelration (continuous in [0, ...])
     - Fish cosinus of retreat vector "cos(vec_ret)" (continuous in [-1, 1])
+
+Predictor variables (X_t):
+    - Robot-fish distance
+    - Robot speed
+    - Robot cosinus of approach vector "cos(vec_app)"
+    - Fish distance to the closest wall
+    - Fish speed
+    - Fish orientation relative to the robot -> "cos(vec_ret)"
+        E.g. is the fish facing the robot directly?
+
 
 Notes on Binarization of Response variables (Y_binary):
     - Fish speed:
@@ -34,15 +45,6 @@ Notes on Binarization of Response variables (Y_binary):
     - Fish cos of retreat vector:
         If cos(vec_ret) > 0 => Moving away from robot
         Otherwise => Moving towards robot
-
-Predictor variables (X):
-    - Robot-fish distance
-    - Robot speed
-    - Interaction : robot_speed / distance
-    - Robot cosinus of approach vector "cos(vec_app)"
-    - Fish distance to the closest wall
-    - Fish orientation relative to the robot
-        E.g. is the fish facing the robot directly?
 
 Considerations/Problems:
     * Time-delay

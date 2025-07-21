@@ -10,6 +10,18 @@ plt.rcParams.update(
     }
 )
 
+colors = [
+    "#332288",  # indigo
+    "#88CCEE",  # cyan
+    "#44AA99",  # teal
+    "#117733",  # green
+    "#999933",  # olive
+    "#DDCC77",  # sand
+    "#CC6677",  # rose
+    "#882255",  # wine
+    "#AA4499",  # purple
+    "#DDDDDD",  # pale grey
+]
 
 def plot_multipdf(n_total_rows, 
                   n_fig_rows, 

@@ -1,0 +1,50 @@
+gp_name         ,gp_value ,dp_experiment_id ,dp_acc_height ,dp_vel_height ,coeff_name             ,coeff_estimate ,coeff_p_value ,statistics_name       ,statistics_value
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,(Intercept)            ,7.021          ,**            ,marginal_r_squared    ,0.05211898774931295
+func_multiplier ,0        ,1                ,0             ,0             ,distance               ,-0.01852       ,***           ,conditional_r_squared ,0.38026494453486553
+acc_max_height  ,0        ,2                ,0             ,0             ,c_apv                  ,0.05536        ,2e-16         ,repeatability         ,0.3461889757728025
+vel_max_height  ,0        ,3                ,0             ,0             ,cos_rev                ,1.634          ,2e-16         ,repeatability_ci      ,"(0.07183149548745431, 0.5983185081869216)"
+acc_prominence  ,5        ,4                ,0             ,0             ,min_wall_distance_fish ,0.009423       ,              ,repeatability_p       ,7.38372489595886e-294
+do_group        ,False    ,                 ,              ,              ,                       ,               ,              ,                      ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------        ,-------       ,-------               ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,(Intercept)            ,7.433          ,**            ,marginal_r_squared    ,0.043476938090660326
+func_multiplier ,0        ,1                ,0             ,0             ,distance               ,-0.01831       ,***           ,conditional_r_squared ,0.36247726790350415
+acc_max_height  ,0        ,2                ,0             ,0             ,c_apv                  ,0.04577        ,***           ,repeatability         ,0.33349988360560723
+vel_max_height  ,0        ,3                ,0             ,0             ,cos_rev                ,1.596          ,2e-16         ,repeatability_ci      ,"(0.040825743723295185, 0.62271507247273)"
+acc_prominence  ,10       ,4                ,0             ,0             ,min_wall_distance_fish ,0.0265         ,***           ,repeatability_p       ,1.8134790859426466e-153
+do_group        ,False    ,                 ,              ,              ,                       ,               ,              ,                      ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------        ,-------       ,-------               ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,(Intercept)            ,7.638          ,**            ,marginal_r_squared    ,0.04072385787847676
+func_multiplier ,0        ,1                ,0             ,0             ,distance               ,-0.01752       ,***           ,conditional_r_squared ,0.36314463343751974
+acc_max_height  ,0        ,2                ,0             ,0             ,c_apv                  ,0.04303        ,***           ,repeatability         ,0.3361084065386856
+vel_max_height  ,0        ,3                ,0             ,0             ,cos_rev                ,1.517          ,2e-16         ,repeatability_ci      ,"(0.07934248884173314, 0.5966108087415289)"
+acc_prominence  ,12.5     ,4                ,0             ,0             ,min_wall_distance_fish ,0.03444        ,***           ,repeatability_p       ,6.63290131389657e-129
+do_group        ,False    ,                 ,              ,              ,                       ,               ,              ,                      ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------        ,-------       ,-------               ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,(Intercept)            ,7.68           ,**            ,marginal_r_squared    ,0.03832277484166039
+func_multiplier ,0        ,1                ,0             ,0             ,distance               ,-0.01219       ,*             ,conditional_r_squared ,0.3749051483068809
+acc_max_height  ,0        ,2                ,0             ,0             ,c_apv                  ,0.04411        ,***           ,repeatability         ,0.34999515914479773
+vel_max_height  ,0        ,3                ,0             ,0             ,cos_rev                ,1.419          ,2e-16         ,repeatability_ci      ,"(0.05249408955844177, 0.6070769891869251)"
+acc_prominence  ,15       ,4                ,0             ,0             ,min_wall_distance_fish ,0.03856        ,***           ,repeatability_p       ,3.465525431094396e-115
+do_group        ,False    ,                 ,              ,              ,                       ,               ,              ,                      ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------        ,-------       ,-------               ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,(Intercept)            ,7.912          ,**            ,marginal_r_squared    ,0.034927482804957916
+func_multiplier ,0        ,1                ,0             ,0             ,distance               ,-0.01379       ,*             ,conditional_r_squared ,0.3727233625675312
+acc_max_height  ,0        ,2                ,0             ,0             ,c_apv                  ,0.04215        ,***           ,repeatability         ,0.35002124062590456
+vel_max_height  ,0        ,3                ,0             ,0             ,cos_rev                ,1.289          ,***           ,repeatability_ci      ,"(0.045721422061258454, 0.5491871703411985)"
+acc_prominence  ,17.5     ,4                ,0             ,0             ,min_wall_distance_fish ,0.04602        ,***           ,repeatability_p       ,9.320822652823449e-98
+do_group        ,False    ,                 ,              ,              ,                       ,               ,              ,                      ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------        ,-------       ,-------               ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,(Intercept)            ,7.951          ,**            ,marginal_r_squared    ,0.03675178519454731
+func_multiplier ,0        ,1                ,0             ,0             ,distance               ,-0.01388       ,*             ,conditional_r_squared ,0.3653165795681101
+acc_max_height  ,0        ,2                ,0             ,0             ,c_apv                  ,0.04368        ,***           ,repeatability         ,0.3411008599065227
+vel_max_height  ,0        ,3                ,0             ,0             ,cos_rev                ,1.297          ,***           ,repeatability_ci      ,"(0.05756335970344879, 0.5831708922539045)"
+acc_prominence  ,18.5     ,4                ,0             ,0             ,min_wall_distance_fish ,0.04782        ,***           ,repeatability_p       ,2.6983960431184353e-89
+do_group        ,False    ,                 ,              ,              ,                       ,               ,              ,                      ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------        ,-------       ,-------               ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,(Intercept)            ,8.008          ,**            ,marginal_r_squared    ,0.03758028024304751
+func_multiplier ,0        ,1                ,0             ,0             ,distance               ,-0.01246       ,*             ,conditional_r_squared ,0.3608442424354952
+acc_max_height  ,0        ,2                ,0             ,0             ,c_apv                  ,0.04533        ,***           ,repeatability         ,0.3358866776691609
+vel_max_height  ,0        ,3                ,0             ,0             ,cos_rev                ,1.271          ,***           ,repeatability_ci      ,"(0.06157167782021994, 0.5744678192457774)"
+acc_prominence  ,20       ,4                ,0             ,0             ,min_wall_distance_fish ,0.05023        ,***           ,repeatability_p       ,2.3877868018529524e-78
+do_group        ,False    ,                 ,              ,              ,                       ,               ,              ,                      ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------        ,-------       ,-------               ,-------

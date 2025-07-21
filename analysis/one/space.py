@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from core.experiment import Experiment
 from core.study import study
+from scipy.signal import find_peaks, peak_prominences, peak_widths
 
 
 size_input = (width_input, height_input) = (2048, 2048)
@@ -140,7 +141,7 @@ def label_trajectories_in_video(
         cv2.imshow("frame", frame)
 
 
-def plot_trajectory_descriptives(axes, trajectory: pd.DataFrame):
+def plot_trajectory_descriptives(axes, trajectory: pd.DataFrame, prominence : float):
     label_fontsize = 26
     linewidth = 2
 
@@ -162,6 +163,33 @@ def plot_trajectory_descriptives(axes, trajectory: pd.DataFrame):
             color='tab:orange',
             linewidth=linewidth)
     ax.set_ylabel("Fish Speed (cm/s)")
+    ax.hlines(5, trajectory['frame'].min(), trajectory['frame'].max(), color='tab:gray', linestyle='--')
+
+    y = trajectory['speed_fish']
+    peaks, _ = find_peaks(y, height=0, distance=15)
+    prominences = peak_prominences(y, peaks)[0]
+    contour_heights = y.iloc[peaks] - prominences
+
+    ax.hlines(0, trajectory['frame'].min(), trajectory['frame'].max(), color='tab:gray', linestyle='--')
+    ax.vlines(x=trajectory['frame'].iloc[peaks], ymin=contour_heights, ymax=y.iloc[peaks])
+    ax.plot(trajectory['frame'].iloc[peaks], 
+            trajectory['speed_fish'].iloc[peaks], 
+            'x',
+            color='tab:red',
+            markersize=20,
+            label='Peaks')
+
+    # y = trajectory['speed_fish']
+    # peaks, _ = find_peaks(y, height=5, threshold=0.1)
+    # prominences = peak_prominences(y, peaks)[0]
+    # contour_heights = y.iloc[peaks] - prominences
+    # ax.vlines(x=trajectory['frame'].iloc[peaks], ymin=contour_heights, ymax=y.iloc[peaks])
+    # ax.plot(trajectory['frame'].iloc[peaks], 
+    #         y.iloc[peaks], 
+    #         'x',
+    #         color='tab:red',
+    #         markersize=20,
+    #         label='Peaks')
 
     ax = axes[2]
     ax.plot(trajectory['frame'],
@@ -180,6 +208,84 @@ def plot_trajectory_descriptives(axes, trajectory: pd.DataFrame):
             linewidth=linewidth)
     ax.set_ylabel("Acceleration (cm/s²)")
 
+    y = trajectory['acceleration_fish']
+    peaks, _ = find_peaks(y, prominence=prominence, height=0)
+    prominences = peak_prominences(y, peaks)[0]
+    contour_heights = y.iloc[peaks] - prominences
+
+    ax.hlines(0, trajectory['frame'].min(), trajectory['frame'].max(), color='tab:gray', linestyle='--')
+    ax.vlines(x=trajectory['frame'].iloc[peaks], ymin=contour_heights, ymax=y.iloc[peaks])
+    ax.plot(trajectory['frame'].iloc[peaks], 
+            trajectory['acceleration_fish'].iloc[peaks], 
+            'x',
+            color='tab:red',
+            markersize=20,
+            label='Peaks')
+    
+    # find starting point
+    # peak_w = peak_widths(y, peaks, rel_height=0.75)
+    # point = [peak_w[2], peak_w[1]]
+    # min_frame = trajectory['frame'].min()
+    # point[0] = min_frame + point[0]
+    # ax.scatter(*point, color='tab:blue', s=100, label='Start Point')
+
+    # start_peak_frames = []
+    # step = 10
+    # for peak in peaks:
+    #     start_peak = max(0, peak - step)
+    #     start_peak_frames.append(start_peak)
+    # ax.plot(trajectory['frame'].iloc[start_peak_frames],
+    #         trajectory['acceleration_fish'].iloc[start_peak_frames],
+    #         'o',
+    #         color='tab:red',
+    #         markersize=20,
+    #         label='Start Peaks')
+    
+    peak_frames = trajectory['frame'].iloc[peaks]
+    # find maximum velocities accompanying the peaks, a few frames later
+    # and the corresponding frames
+    # window = 9
+    # max_velocities = []
+    # max_velocity_frames = []
+
+    # np_frames = trajectory['frame'].to_numpy()
+    # np_speed_fish = trajectory['speed_fish'].to_numpy()
+
+    # for peak in peaks:
+    #     i = peak
+    #     velocities = np_speed_fish[i:i+window]
+    #     if velocities.shape[0] == 0:
+    #         continue
+    #     max_velocity = velocities.max()
+    #     max_velocity_index = velocities.argmax()
+    #     max_velocity_frame = np_frames[i + max_velocity_index]
+    #     max_velocities.append(max_velocity)
+    #     max_velocity_frames.append(max_velocity_frame)
+    # axes[1].plot(max_velocity_frames, 
+    #         max_velocities, 
+    #         'o',
+    #         color='tab:red',
+    #         markersize=20,
+    #         label='Max Speeds')
+    
+    # find local maximum in jerk (going back in time) for each peak of acceleration
+    jerk = np.diff(trajectory['acceleration_fish']) / 0.04
+    jerk = np.append(jerk, 0)
+    trajectory['jerk_fish'] = jerk
+    # use while loop algorithm to find local maximum
+    for peak in peaks:
+        i = peak
+        while i > 0 and jerk[i] <= jerk[i-1]:
+            i -= 1
+        if i > 0:
+            axes[4].plot(trajectory['frame'].iloc[i], 
+                    trajectory['jerk_fish'].iloc[i], 
+                    'o',
+                    color='tab:red',
+                    markersize=20,
+                    label='Jerk Peaks')
+
+
     # ax = axes[3]
     # ax.plot(trajectory['frame'], 
     #         trajectory['speed_robot'], 
@@ -189,15 +295,27 @@ def plot_trajectory_descriptives(axes, trajectory: pd.DataFrame):
     # ax.set_ylabel("Robot Speed (cm/s)")
 
     ax = axes[4]
-    ax.plot(trajectory['frame'], 
-            trajectory['cos_rev'], 
-            label='Cosine Fish Retreat',
+
+    # compute jerk (diff of acceleration
+    jerk = np.diff(trajectory['acceleration_fish']) / 0.04
+    jerk = np.append(jerk, 0)
+    trajectory['jerk_fish'] = jerk
+    ax.plot(trajectory['frame'],
+            trajectory['jerk_fish'],
+            label='Jerk Fish',
             color='tab:red',
             linewidth=linewidth)
-    ax.set_ylabel("Cos Fish Retreat")
-    ax.hlines(0, trajectory['frame'].min(), trajectory['frame'].max(), color='tab:gray', linestyle='--')
+    ax.set_ylabel("Fish Jerk (cm/s³)")
+
+    # ax.plot(trajectory['frame'], 
+    #         trajectory['cos_rev'], 
+    #         label='Cosine Fish Retreat',
+    #         color='tab:red',
+    #         linewidth=linewidth)
+    # ax.set_ylabel("Cos Fish Retreat")
+    # ax.hlines(0, trajectory['frame'].min(), trajectory['frame'].max(), color='tab:gray', linestyle='--')
     
-    return ax
+    return axes
 
 
 def plot_trajectory_visual(ax, trajectory: pd.DataFrame):
@@ -230,7 +348,7 @@ def plot_trajectory_visual(ax, trajectory: pd.DataFrame):
     ax.legend()
 
 
-def plot_trajectory(t_i: int, trajectory: pd.DataFrame):
+def plot_trajectory(t_i: int, trajectory: pd.DataFrame, experiment_id: int, prominence: float):
     fig, axes = plt.subplots(5, 2)
     fig.set_figheight(20)
     fig.set_figwidth(40)
@@ -241,12 +359,12 @@ def plot_trajectory(t_i: int, trajectory: pd.DataFrame):
     axbig = fig.add_subplot(gs[0:, 0])
 
     plot_trajectory_visual(axbig, trajectory)
-    plot_trajectory_descriptives(axes[:, 1], trajectory)
+    plot_trajectory_descriptives(axes[:, 1], trajectory, prominence)
 
     min_frame = trajectory['frame'].min()
     max_frame = trajectory['frame'].max()
     filename = f"T={t_i}_F={min_frame}-{max_frame}.png"
-    filefolder = f"{study.plot_output_folder}/2"
+    filefolder = f"{study.plot_output_folder}/2/E={experiment_id}"
     if not os.path.exists(filefolder):
         os.makedirs(filefolder)
     filepath = f"{filefolder}/{filename}"
@@ -339,9 +457,30 @@ def get_trajectories(data: pd.DataFrame, experiment_id: int):
 if __name__ == "__main__":
     data = study.data
 
-    trajectories = get_trajectories(data, 0)
-    for t_i, trajectory in enumerate(trajectories):
-        plot_trajectory(t_i, trajectory)
+    # df = data[data['experiment_id'] == 0]
+    # # get mean, std and variance of speed_fish
+    # print(df['speed_fish'].mean())
+    # print(df['speed_fish'].std())
+    # print(df['speed_fish'].var())
+
+    experiment_ids = study.experiment_ids
+
+    for experiment_id in experiment_ids:
+        print(f"Analying of experiment {experiment_id}")
+        df = data[data['experiment_id'] == experiment_id]
+        print(df['speed_fish'].mean())
+        print(df['speed_fish'].std())
+        print(df['speed_fish'].var())
+
+        speed_fish_std = df['speed_fish'].std()
+        prominence = 5.08 * speed_fish_std
+        prominence = 13
+        print(prominence)
+    
+        trajectories = get_trajectories(data, experiment_id)
+        for t_i, trajectory in enumerate(trajectories):
+            print("Plotting trajectory", t_i)
+            plot_trajectory(t_i, trajectory, experiment_id, prominence)
 
     # trajectory_16 = trajectories[16]
     # # print(trajectory_16['wall_distances_fish'])

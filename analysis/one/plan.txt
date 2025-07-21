@@ -1,0 +1,31 @@
+1. Sample time points
+
+Filter
+    -> speed_fish > ...
+    -> acceleration > ...
+Vary
+    -> prominence
+
+2.1 Plot distributions of
+    * predictors
+    * responses: velocity + acceleration
+2.2 Plot scatter points of 
+    * predictor-velocity
+    * predictor-acceleration
+
+3. Regression of 
+    * speed_fish ~ X
+    * acceleration_fish ~ X
+    with X as
+    - distance
+    - speed_robot
+    - cos_apv 
+    - ORIENTATION_TO_ROBOT
+    - min wall_distances_fish
+
+4. Comparison test predictor (X) distributions:
+    a. peak-moments 
+    b. non-peak-moments
+
+!! TODO: Repeat for cos(vec_ret), but adjust time-points based on turns? or perhaps not actually !!
+

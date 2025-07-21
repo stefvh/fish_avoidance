@@ -1,0 +1,8 @@
+
+model <- rv_cos_rev ~ b1 * distance + b2 * apv + (1 | experiment_id)
+b1 < 0
+b2 > 0
+
+b_cos_rev <- if cos_rev > 0 then 1 else 0
+
+model.predict()

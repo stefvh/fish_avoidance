@@ -95,8 +95,8 @@ class Experiment:
         print("Deriving quantities...")
         self.derive_quantities()
 
-        # print("Loading results...")
-        # self.load_results()
+        print("Loading results...")
+        self.load_results()
         
         print("Saving experiment...")
         self.save()
@@ -275,6 +275,8 @@ class Experiment:
         df_trials["end_frame"] = (df_trials["end_relative_time"].dt.total_seconds() / self.period).astype(int)
 
         df_trials.insert(0, "trial_id", range(len(df_trials)))
+
+        print(f"Detected {len(df_trials)} trials.")
 
         self.trials = df_trials
     

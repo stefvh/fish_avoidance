@@ -1,0 +1,43 @@
+gp_name         ,gp_value ,dp_experiment_id ,dp_acc_height ,dp_vel_height ,coeff_name             ,coeff_estimate        ,coeff_p_value ,statistics_name ,statistics_value
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,distance               ,-0.030037203560428504 ,***           ,r_squared       ,0.03582081927632258
+func_multiplier ,0        ,1                ,0             ,0             ,c_apv                  ,0.030819578319729504  ,**            ,adj_r_squared   ,0.033407354493534935
+acc_max_height  ,0        ,2                ,0             ,0             ,cos_rev                ,-0.19455771329032878  ,              ,f_statistic     ,"F = 29.684144995020507, df1 = 4, df2 = 3196"
+vel_max_height  ,0        ,3                ,0             ,0             ,min_wall_distance_fish ,0.016589620635236314  ,.             ,p_value         ,2.813958799354957e-24
+acc_prominence  ,10       ,4                ,0             ,0             ,                       ,                      ,              ,                ,
+do_group        ,False    ,                 ,              ,              ,                       ,                      ,              ,                ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------               ,-------       ,-------         ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,distance               ,-0.031157277359345113 ,***           ,r_squared       ,0.03720803882590251
+func_multiplier ,0        ,1                ,0             ,0             ,c_apv                  ,0.02802168107709883   ,*             ,adj_r_squared   ,0.03456663426849749
+acc_max_height  ,0        ,2                ,0             ,0             ,cos_rev                ,-0.28483960768743866  ,              ,f_statistic     ,"F = 28.17291938229853, df1 = 4, df2 = 2916"
+vel_max_height  ,0        ,3                ,0             ,0             ,min_wall_distance_fish ,0.019958641882254193  ,*             ,p_value         ,5.403150071223913e-23
+acc_prominence  ,12.5     ,4                ,0             ,0             ,                       ,                      ,              ,                ,
+do_group        ,False    ,                 ,              ,              ,                       ,                      ,              ,                ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------               ,-------       ,-------         ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,distance               ,-0.02870155789236629  ,***           ,r_squared       ,0.040671419913390836
+func_multiplier ,0        ,1                ,0             ,0             ,c_apv                  ,0.02917685383787003   ,*             ,adj_r_squared   ,0.037781875997467296
+acc_max_height  ,0        ,2                ,0             ,0             ,cos_rev                ,-0.35731472023975464  ,              ,f_statistic     ,"F = 28.150753957578587, df1 = 4, df2 = 2656"
+vel_max_height  ,0        ,3                ,0             ,0             ,min_wall_distance_fish ,0.020949156626693534  ,*             ,p_value         ,6.210682671360311e-23
+acc_prominence  ,15       ,4                ,0             ,0             ,                       ,                      ,              ,                ,
+do_group        ,False    ,                 ,              ,              ,                       ,                      ,              ,                ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------               ,-------       ,-------         ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,distance               ,-0.030637577928181715 ,***           ,r_squared       ,0.04891297134320793
+func_multiplier ,0        ,1                ,0             ,0             ,c_apv                  ,0.03110925451102395   ,*             ,adj_r_squared   ,0.04576367654633107
+acc_max_height  ,0        ,2                ,0             ,0             ,cos_rev                ,-0.44157297651451993  ,*             ,f_statistic     ,"F = 31.062808976610064, df1 = 4, df2 = 2416"
+vel_max_height  ,0        ,3                ,0             ,0             ,min_wall_distance_fish ,0.024533786334671827  ,*             ,p_value         ,2.943418295689388e-25
+acc_prominence  ,17.5     ,4                ,0             ,0             ,                       ,                      ,              ,                ,
+do_group        ,False    ,                 ,              ,              ,                       ,                      ,              ,                ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------               ,-------       ,-------         ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,distance               ,-0.031218215440268485 ,***           ,r_squared       ,0.04959632453861948
+func_multiplier ,0        ,1                ,0             ,0             ,c_apv                  ,0.03151140289271743   ,*             ,adj_r_squared   ,0.046360907771091475
+acc_max_height  ,0        ,2                ,0             ,0             ,cos_rev                ,-0.42487916213495375  ,.             ,f_statistic     ,"F = 30.658383820215906, df1 = 4, df2 = 2350"
+vel_max_height  ,0        ,3                ,0             ,0             ,min_wall_distance_fish ,0.023824271972098233  ,*             ,p_value         ,6.529839116125699e-25
+acc_prominence  ,18.5     ,4                ,0             ,0             ,                       ,                      ,              ,                ,
+do_group        ,False    ,                 ,              ,              ,                       ,                      ,              ,                ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------               ,-------       ,-------         ,-------
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,distance               ,-0.030442427103846596 ,***           ,r_squared       ,0.04993233767835096
+func_multiplier ,0        ,1                ,0             ,0             ,c_apv                  ,0.031089462159717654  ,*             ,adj_r_squared   ,0.04651175203542868
+acc_max_height  ,0        ,2                ,0             ,0             ,cos_rev                ,-0.45445982797403034  ,*             ,f_statistic     ,"F = 29.19519806888593, df1 = 4, df2 = 2222"
+vel_max_height  ,0        ,3                ,0             ,0             ,min_wall_distance_fish ,0.0245300157721891    ,*             ,p_value         ,1.0892926743315806e-23
+acc_prominence  ,20       ,4                ,0             ,0             ,                       ,                      ,              ,                ,
+do_group        ,False    ,                 ,              ,              ,                       ,                      ,              ,                ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------               ,-------       ,-------         ,-------

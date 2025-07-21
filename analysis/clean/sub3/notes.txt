@@ -1,0 +1,11 @@
+\subsection{What does avoidance look like?}
+
+% => In which direction do they go? (relative to the robot) --> Is this really 180 degrees away?
+% => How far away do they go?  (~ Fig 4)
+
+% 1) Before and after trial relative angle (Distribution)
+%   +) Max speed
+% 2) Relative angle of entire dataset when v_avoid > 0 (and not freezing)(Distribution)
+% 3) Displacement in post-approach (Distribution + scatter )
+% 4) Time until decceleration (Distr + scatter)
+% 5) Avoidance speed in terms of approach speed and distance (Heatmap) ~ Fig 4

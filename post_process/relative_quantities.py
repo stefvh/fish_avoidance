@@ -46,6 +46,12 @@ class RelativeQuantities:
         df["rev"] = df["dx_fish"] * df["x_fr_n"] + df["dy_fish"] * df["y_fr_n"]
         df["cos_rev"] = df["rev"] / df["speed_fish"]
 
+        # Calculate fish retreat acceleration (projection of fish's acceleration onto the relative position vector)
+        df["ax_fish"] = df["dx_fish"].diff() / self.time_step
+        df["ay_fish"] = df["dy_fish"].diff() / self.time_step
+        df["rea"] = df["ax_fish"] * df["x_fr_n"] + df["ay_fish"] * df["y_fr_n"]
+
+
         return df
 
     def compute(self):

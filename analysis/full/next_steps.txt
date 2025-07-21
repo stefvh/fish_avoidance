@@ -1,0 +1,23 @@
+For fish speed/acc models:
+    -> could maybe take lagged window of max/mean speed_robot (like ~5 frames before predictor_time)
+        -> motivation: it is a time-derived measurement, so the fish could only observe it over a time window
+
+Next response: cos_rev
+What do we want to find out?:
+    Does the fish move more 'away' as the robot comes closer, goes faster, etc.
+    -> QUESTION: Should i include lagged values of speed_fish and/or cos_rev?
+
+*******
+last result subsection:
+-> case study: keeping it away from a (danger) zone
+    ~ blocked/free HYPOTHESIS
+
+=> projection of the recent robot trajectory onto the whole space
+-> get shortest distance from fish to the trajectory line
+    -> make positive/negative sign to see if it stays in the positive
+    (or low negative)
+
+
+=> also think of inclusion to couzin model
+    -> find max distance threshold for which : fish 95%-100% escapes, or stays in the positive space
+
