@@ -9,6 +9,7 @@ data/*
 *.pdf
 *.pkl
 core/*.csv
+*.csv
 
 # C extensions
 *.so
@@ -111,8 +112,10 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.venv39
 env/
 venv/
+.venv39/
 ENV/
 env.bak/
 venv.bak/
@@ -134,3 +137,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Related to R language
+.Rhistory
+.RData

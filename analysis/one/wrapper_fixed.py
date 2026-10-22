@@ -5,7 +5,9 @@ import pandas as pd
 
 pandas2ri.activate()
 
-def run_plm_model(dataframe, response_var, predictor_vars, indexes, model_type, effect):
+def run_plm_model(dataframe: pd.DataFrame, response_var, predictor_vars, indexes, model_type, effect, 
+    maxlag=None,          # <-- DK truncation lag
+):
     r = robjects.r
     
     # Load required R libraries
@@ -38,9 +40,23 @@ def run_plm_model(dataframe, response_var, predictor_vars, indexes, model_type, 
     summary_cmd = 'summary(model)'
     summary = r(summary_cmd)
 
-    # Cluster standard errors
-    vcov_cluster_cmd = 'vcov_cluster <- vcovHC(model, type = "HC1", cluster = "group")'
-    r(vcov_cluster_cmd)
+    if effect == "individual":
+        # One way Fe
+        # Cluster standard errors
+        vcov_cluster_cmd = 'vcov_cluster <- vcovHC(model, type = "HC1", cluster = "group")'
+        r(vcov_cluster_cmd)
+    elif effect == "twoways":
+        # Two way FE
+        if maxlag is None:
+            maxlag = 8
+        print(maxlag)
+         # ---- Driscoll–Kraay covariance ----
+        # vcovSCC: DK estimator; maxlag is "maximum lag order before truncation"
+        # inner="cluster" is the default SCC behavior per docs.
+        vcov_cluster_cmd = f'vcov_cluster <- vcovSCC(model, type="HC1", maxlag={maxlag})'
+        r(vcov_cluster_cmd)
+    else:
+        raise ValueError("Only one-way or two-way fixed effects are supported.")
 
     # Perform coeftest with clustered standard errors
     coeftest_cmd = 'coeftest_result <- coeftest(model, vcov_cluster)'
@@ -51,10 +67,22 @@ def run_plm_model(dataframe, response_var, predictor_vars, indexes, model_type, 
     coeftest_result = np.array(coeftest_result)
     coef_names = r('rownames(coeftest_result)')
     coef_names = list(coef_names)
+
     coef_values = coeftest_result[:, 0]
     std_errors = coeftest_result[:, 1]
     t_values = coeftest_result[:, 2]
     p_values = coeftest_result[:, 3]
+
+    # Calculate confidence intervals
+    ci_cmd = 'ci <- lmtest::coefci(model, vcov.=vcov_cluster)'
+    r(ci_cmd)
+    ci_result = r('ci')
+    ci_result = np.array(ci_result)
+    # print("CI from lmtest::coefci:", ci_result)
+    ci_low  = ci_result[:, 0]
+    ci_high = ci_result[:, 1]
+
+    # Determine significance levels
     signif_values = []
     for p_value in p_values:
         str = f"{p_value:.3f}"
@@ -90,7 +118,6 @@ def run_plm_model(dataframe, response_var, predictor_vars, indexes, model_type, 
     '''
     repeatability = r(repeatability_cmd)[0]
 
-
     # Convert extracted data to Python dictionary
     model_summary = {
         "coefficients": {coef_names[i]: {
@@ -99,6 +126,8 @@ def run_plm_model(dataframe, response_var, predictor_vars, indexes, model_type, 
             "t_value": t_values[i],
             "p_value": p_values[i],
             "significance": signif_values[i],
+            "ci_low": float(ci_low[i]),
+            "ci_high": float(ci_high[i]),
         } for i in range(len(coef_names))},
         "r_squared": r_squared,
         "adj_r_squared": adj_r_squared,

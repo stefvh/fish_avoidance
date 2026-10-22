@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 
+from analysis.one.wrapper_wald_test import wald_test_plm
 from core.experiment import Experiment
 from core.study import study
 
@@ -198,49 +199,102 @@ def get_regression_results():
         vel_dataframe["rv_rea"] = vel_dataframe["rv_ax_fish"] * vel_dataframe["rv_x_fr_n"] + vel_dataframe["rv_ay_fish"] * vel_dataframe["rv_y_fr_n"]
         acc_dataframe["ra_rea"] = acc_dataframe["ra_ax_fish"] * acc_dataframe["ra_x_fr_n"] + acc_dataframe["ra_ay_fish"] * acc_dataframe["ra_y_fr_n"]
 
+        # Model params
         lead = 8 # given_parameter["lead"]
-        # TEST
-        # timed_df = full_data.copy()
-        # # Step 1: Create a new time_sec variable
-        # timed_df['time_sec'] = np.floor(timed_df['time'] / 5)
-        # # Step 2: Aggregate data by experiment_id and time_sec
-        # agg_df = timed_df.groupby(['experiment_id', 'time_sec']).agg(
-        #     rev=('rev', 'mean'),
-        #     distance=('distance', 'mean'),
-        #     apv=('apv', 'mean'),
-        #     min_wall_distance_fish=('min_wall_distance_fish', 'mean'),
-        # ).reset_index()
-
-        # # Step 3: Create the time_trend column within each experiment_id group
-        # agg_df['time_trend'] = agg_df.groupby('experiment_id')['time_sec'].transform(
-        #     lambda x: (x - x.min()) / (x.max() - x.min())
-        # )
-        # print(agg_df)
-        # # Step 4: Shift the 'rev' column for lead
-        # agg_df['rev_lead'] = agg_df.groupby('experiment_id')['rev'].shift(-lead)
-        # # Run the model
         response_var = "rev"
 
+        # Extend dataset
         full_data["speed_ratio"] = full_data["speed_fish"] / full_data["speed_robot"]
+        for v in ["distance", "apv"]:
+            full_data[v + "_c"] = full_data.groupby("experiment_id")[v]\
+                                        .transform(lambda x: x - x.mean())
+        full_data["distance_apv"] = full_data["distance_c"] * full_data["apv_c"]
+
+        # Default predictors
+        default_predictor_vars = [
+            "distance",
+            "apv",
+            "min_wall_distance_fish",
+        ]
+
+        # Default plm params
+        default_plm_params = {
+            "dataframe": full_data,
+            "response_var": f"lead({response_var}, {lead})",
+            "predictor_vars": default_predictor_vars,
+            "indexes": ["experiment_id"],
+            "model_type": "within",
+            "effect": "individual",
+        }
+
+        # COUPLING EFFECTS
+        coupling_predictor_vars = [
+            "distance_c", 
+            "apv_c",
+            "min_wall_distance_fish",
+            "distance_apv",
+        ]
+
+        # WALD TEST
+        # response_var = f"lead(rev, {lead})"
+        # restricted = ["distance_c", "apv_c", "min_wall_distance_fish"]
+        # full = ["distance_c", "apv_c", "min_wall_distance_fish", "distance_apv"]
+        # wt = wald_test_plm(
+        #     full_data,
+        #     response_var=response_var,
+        #     predictors_restricted=restricted,
+        #     predictors_full=full,
+        #     indexes=["experiment_id"],
+        #     model_type="within",
+        #     effect="individual",
+        #     vcov_type="HC1",
+        #     cluster="group",
+        # )
+        
+        # TWO WAY
+        timed_df = full_data.copy()
+        # Step 1: Create a new time_sec variable
+        timed_df['time_sec'] = np.floor(timed_df['time'] / 5)
+        # Step 2: Aggregate data by experiment_id and time_sec
+        agg_df = timed_df.groupby(['experiment_id', 'time_sec']).agg(
+            rev=('rev', 'mean'),
+            distance_c=('distance_c', 'mean'),
+            apv_c=('apv_c', 'mean'),
+            min_wall_distance_fish=('min_wall_distance_fish', 'mean'),
+            distance_apv=('distance_apv', 'mean'),
+        ).reset_index()
+        # Step 3: Create the time_trend column within each experiment_id group
+        agg_df['time_trend'] = agg_df.groupby('experiment_id')['time_sec'].transform(
+            lambda x: (x - x.min()) / (x.max() - x.min())
+        )
+        # print(agg_df)
+        # Step 4: Shift the 'rev' column for lead
+        agg_df['rev_lead'] = agg_df.groupby('experiment_id')['rev'].shift(-lead)
+        # Step : Construct plm parameters
+        Ti = agg_df.groupby("experiment_id")["time_sec"].nunique()
+        T_min = Ti.min()
+        twoways_plm_params = {
+            "dataframe": agg_df,
+            "response_var": "rev_lead",
+            "predictor_vars": coupling_predictor_vars,
+            "indexes": ["experiment_id", "time_sec"],
+            "model_type": "within",
+            "effect": "twoways",
+            "maxlag": max(int(np.floor(T_min ** 0.25)), 1),
+        }
+
+        # COUPLING
+        coupling_plm_params = default_plm_params.copy()
+        coupling_plm_params["predictor_vars"] = coupling_predictor_vars
 
         print(full_data.shape)
         # Run model
         response_var = f"lead({response_var}, {lead})"
         result = run_plm_model(
-            full_data,
-            response_var=response_var,
-            predictor_vars=[
-                "distance", 
-                "apv",
-                # "cos_rev", 
-                "min_wall_distance_fish",
-                # "p_speed_fish",
-            ],
-            indexes=["experiment_id"],
-            model_type="within",
-            effect="individual"
+            **twoways_plm_params
         )
         results.append(result)
+
 
     return given_parameters, derived_parameters, results, response_var
 
@@ -252,6 +306,7 @@ def create_fe_csv(given_parameters, derived_parameters, model_summaries, respons
         "gp_name", "gp_value", 
         "dp_experiment_id", "dp_acc_height", "dp_vel_height",
         "coeff_name", "coeff_estimate", "coeff_p_value",
+        "coeff_ci_low", "coeff_ci_high",
         "statistics_name", "statistics_value",
     ]
     rows = []
@@ -269,6 +324,9 @@ def create_fe_csv(given_parameters, derived_parameters, model_summaries, respons
         coeff_names = list(model_summary["coefficients"].keys())
         coeff_estimates = [model_summary["coefficients"][name]["estimate"] for name in coeff_names]
         coeff_p_values = [model_summary["coefficients"][name]["significance"] for name in coeff_names]
+        coeff_ci_low  = [model_summary["coefficients"][name]["ci_low"]  for name in coeff_names]
+        coeff_ci_high = [model_summary["coefficients"][name]["ci_high"] for name in coeff_names]
+
         statistics_names = ["r_squared", 
                             "adj_r_squared", 
                             "f_statistic", 
@@ -284,6 +342,8 @@ def create_fe_csv(given_parameters, derived_parameters, model_summaries, respons
         coeff_names += [""] * (n_rows_per_model - len(coeff_names))
         coeff_estimates += [""] * (n_rows_per_model - len(coeff_estimates))
         coeff_p_values += [""] * (n_rows_per_model - len(coeff_p_values))
+        coeff_ci_low += [""] * (n_rows_per_model - len(coeff_ci_low))
+        coeff_ci_high += [""] * (n_rows_per_model - len(coeff_ci_high))
         statistics_values += [""] * (n_rows_per_model - len(statistics_values))
         statistics_names += [""] * (n_rows_per_model - len(statistics_names))
 
@@ -292,6 +352,7 @@ def create_fe_csv(given_parameters, derived_parameters, model_summaries, respons
                 gp_names[j], gp_values[j],
                 dp_experiment_ids[j], dp_acc_height[j], dp_vel_height[j],
                 coeff_names[j], coeff_estimates[j], coeff_p_values[j],
+                coeff_ci_low[j], coeff_ci_high[j],
                 statistics_names[j], statistics_values[j]
             ]
             rows.append(row)

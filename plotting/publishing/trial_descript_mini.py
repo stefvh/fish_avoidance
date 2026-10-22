@@ -219,8 +219,23 @@ def plot_trial(trial, frame_end=None):
     ax.text(0.05, 1.06, r"\textbf{D.}", fontsize=fontsize_annotation, weight='bold',
             transform=ax.transAxes, verticalalignment='center', horizontalalignment='center')
 
+    # for ax in axes[1:].flatten():
+    #     ax.set_xlabel(r"time (25 Hz)", fontsize=fontsize_label)
+    # Convert frame axis (25 Hz) to seconds for all time-based subplots
+    desired_secs = np.array([80, 82, 84, 86, 88])
+    desired_frames = desired_secs * 25  # convert seconds → frames
+
     for ax in axes[1:].flatten():
-        ax.set_xlabel(r"time (25 Hz)", fontsize=fontsize_label)
+        ax.set_xticks(desired_frames)
+        ax.set_xticklabels([f"{s:.0f}" for s in desired_secs])
+        ax.set_xlabel(r"time (s)", fontsize=fontsize_label)
+    # for ax in axes[1:].flatten():
+    #     # Convert xticks from frames to seconds
+    #     xticks = ax.get_xticks()
+    #     ax.set_xticks(xticks)
+    #     ax.set_xticklabels([f"{x/25:.1f}" for x in xticks])  # display 1 decimal place
+    #     ax.set_xlabel(r"time (s)", fontsize=fontsize_label)
+
     
     # set ticks fontsize
     for ax in axes.flatten():
