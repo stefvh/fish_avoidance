@@ -1,2 +1,8 @@
 numpy
 pandas
+scipy
+scikit-learn
+opencv-python
+rpy2
+statsmodels
+mpltern

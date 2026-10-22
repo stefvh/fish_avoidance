@@ -1,0 +1,27 @@
+
+1) Fig 1: Behavioral profile (freezing, exploration, avoidance, with thigmotaxis)
+
+-  fish avoid, for the majority, the robot during the entire experiment
+-  correlation avoidance - thigmotaxis
+
+2) Fig 2: Transition diagram
+
+- Majority avoids upon approach, with small percentage freezing
+- Later after the approach (post-phase), some go back to freezing (stationary)
+
+3) 
+
+What does avoidance look like?
+=> In which direction do they go? (relative to the robot) --> Is this really 180 degrees away?
+=> How far away do they go?  (~ Fig 4)
+
+How do they avoid? (Mechanisms)
+[x% turn] & [(1-x)% don't turn]
+[y% accelerate] & [1-y)% don't acceelrate]
+
+=> Do they turn? 
+    Frequency / (Inclin distance bin where this occurs) 
+    What are the deciding factors for the fish to significantly turn?
+        (Speed ratio, and distance)
+=> Do they accelerate (...) (~ Fig 3)
+==> How do these two actions interact? 

@@ -1,0 +1,8 @@
+gp_name         ,gp_value ,dp_experiment_id ,dp_acc_height ,dp_vel_height ,coeff_name             ,coeff_estimate        ,coeff_p_value ,statistics_name ,statistics_value
+func_bound      ,DEFAULT  ,0                ,0             ,0             ,distance               ,-0.014712950790382463 ,0.180( )      ,r_squared       ,0.014257548288376151
+func_multiplier ,0        ,1                ,0             ,0             ,apv                    ,0.03963622780456456   ,0.001(***)    ,adj_r_squared   ,0.014173393384822486
+acc_max_height  ,0        ,2                ,0             ,0             ,min_wall_distance_fish ,-0.02044270315973022  ,0.244( )      ,f_statistic     ,"F = 395.3140134211314, df1 = 3, df2 = 81994"
+vel_max_height  ,0        ,3                ,0             ,0             ,                       ,                      ,              ,p_value         ,5.712149128699125e-255
+acc_prominence  ,5        ,4                ,0             ,0             ,                       ,                      ,              ,repeatibility   ,0.19776880654425946
+do_group        ,False    ,                 ,              ,              ,                       ,                      ,              ,                ,
+-------         ,-------  ,-------          ,-------       ,-------       ,-------                ,-------               ,-------       ,-------         ,-------

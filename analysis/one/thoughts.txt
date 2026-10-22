@@ -1,0 +1,90 @@
+!! TODO: Repeat for cos(vec_ret), but adjust time-points based on turns? or perhaps not actually !!
+
+To explain the models that we have
+acceleration_fish: distance significant, but not speed_robot
+    -> This means that the fish will accelerate higher just by the robot being close,
+    and being directed at the fish
+speed_fish: distance not significant, but speed_robot is
+    -> So, although it has higher accelerations, the distance is not,
+    This means the fish deploys higher speeds regardless of where the robot is,
+    as long as the robot is moving towards the fish and with greater speed, greater response
+    It could mean that the fish was mostly stationary when the robot approached, leading to acceleration for distance
+    But then the fish maintains the speed for a longer time, possibly accelerating later again to escape,
+    while the distance between robot and fish increased.
+    What it basically means: that the "escape" velocity (at close distance) isn't significantly different than the "avoidance" velocity (at higher distance)
+    where both strategies try to move away from the robot, and as the robot goes faster and towards the fish, the fish has to go faster
+    
+
+From related work we know that:
+$ Escape behavior of fish is indicated by 
+A. Short burst acceleration
+B. High speed
+
+Should we look at acceleration over longer time intervals? 
+That is time interval of T_Y - T_X ?
+We can include this, cause why not, see what happens
+Consider both:
+1. V_Y - V_X
+2. (V_Y - V_X ) / (T_Y - T_X)
+What would these tell us?
+1. The increase in velocity to escape the robot,
+now if the fish was still V_X is small and (1) is high 
+and when V_X is already high (cause exploring) then (1) might be small
+The case where some individual are usually slower should/would be accounted for by fixed effects model
+Meanwhile (B) will give the same result for both cases, if they end up at same velocity; so its a better variable
+
+Now, (A) also has the same problem kind of as (1), but not entirely
+because it measures how fast the change is, and in the end due to the selection fo Y and X,
+(2) is similar to (A)
+--> Conclusion: stick to (A) and (B)
+
+Now.
+Let's deal with the t(Y) selection
+Look again at $. And know that acceleration bursts lead to increase in velocity Two options:
+A. Select high velocity points, and go back to find acceleration --> Seems inconvenient, as we don't know that there would be a burst acceelration
+So the option
+B. Select the high acceleration, go forward to find the velocity -> 
+    It is still easy to filter out the velocity if it's not high enough
+is better and we choose this method.
+
+I have a thought; Y_acc,i may depend on the previous Y_acc,i-1
+but for velocity this could hold true; Y_vec,i ~ Y_vec,i-1
+And then also the duration between these two t_i - t_i-1
+The further away these two points are in time, less likely to have impact.
+Second thought: I wouldn't do this, would require some interaction term things..
+
+
+Now, the filtering depends on what we want to model. 
+
+1. If we want to find out that high accelerations/velocities correlate~ with e.g. low distance,
+And we do this by regression of fe-model,
+Then we need a range of those values: high and low velocities for example.
+Meaning, that we can still filter on some height/prominence, but it shoudln't be too restricting
+
+2. We want the same as (1),
+ but we do it by comparison of the distributions of the predictors (eg distance),
+ Then we can just filter the high values.
+ We filter on height/prominence*(we discuss their values later)
+In the end, we can also do regression as their will be a range of these values, 
+And it doesn't hurt us to see what would happen anyway.
+
+Okay, let's discuss the values of height/prominence now.
+For both (1) and (2): height and prominence > 0
+
+Let's first define 2: Inspired by related work?
+Acceleration -> Height : 20 - 150 cm/s2 => Use 20 as max 
+Velocity -> Height : 15 cm/s (max) we get from related work, verified by two different sources basically --> 
+        Seems to fit
+Note: for both we kindof also need to take include notion of mean/std (look at fish #3..)
+The related work indications can be maximums for those thresholds computed by mean/std
+    Those can be by IQR or modified z-score (times 2 perhaps? -> 0.9772%, 2.5 -> 0.9938%) perhaps. 
+    Or for example mean + std, or mean + 2*std
+
+Secondly, what do we do with 'nearby' accelerations that end up in small increase of the velocity?
+a. Include time_trend, see if this helps with the model / gives different results
+b. Put them together when delta_y < threshold_y and delta_t < threshold_t --> Then take max or mean
+    t(X) is the earliest time point. I would say to use the mean.
+
+Also from related work:
+"distance traveled from time t_X to t_Y" is interesting response variable Y:
+    -> less noisy than velocity/acceleration

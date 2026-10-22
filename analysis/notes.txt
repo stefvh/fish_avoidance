@@ -1,0 +1,84 @@
+ANALYSIS / RESULTS
+
+0. Does the behavior of the robot influence the behavior of the fish in anyway?
+--> How to define the fish behavior: the measurements need to be independent of the robot
+So no computation including robot position or vector or angle or whatever.
+
+HYPOTHESIS: The proximity of the robot (distance) influences the behavior of the fish
+Null hypothesis: There is no significant correlation between 
+
+Dependent variable: Fish behavior 
+    * proportion of action patterns (stationary, moving along the wall, etc.)
+        => prop of stationary actions are noticeable in velocity distribution
+        => moving along the wall can be considered; measured as minimum distance from the wall
+    * motion quanities: velocity, turn
+Independent variable: Robot behavior interacting with fish => distance, heading, robot velocity
+--> Redefine as "Does the presence of the robot influence..." => distance
+-> only by distance, or robot velocity, or both ?
+(The subsequent subsections discuss the influence of different robot behaviors)
+
+--> General test of just distribution if fish behavior
+(we don't care if more high velocities show up in one or another; just care that they are statistically different)
+
+=> Distribution fish_speed grouped by presence/absence of robot --> Stat Test to see how much they different
+=> Distribution fish_turn ...
+
+--> TIME LAGS
+
+******
+
+1. Free/Blocked space hypothesis -> The robot dictates in a way actually the direction that fish will go to, when it "approaches closely enough"
+The directional vector of the robot creates an axis in the space, 
+where if the fish is positioned on one side of this axis, it will stay on that side
+
+--> This section is actually maybe the most important/interesting
+Because with this knowledge, we can do the shepherding, since it gives information of direction
+
+---> COMBINE WITH LEAST ENERGY OPTION : Fish usually keeps the same direction
+
+! divide trajectories as near / far from walls !
+
+******
+
+2. Broad analysis -> Fish behavior: How is it affected by the robot? 
+What could it mean: the fish accelerating very high, sudden turns, freezing, ...
+Then: we have to compare motion measurements of fish (i) in presence and (ii) in absence of robot influence --> Comparison Test
+
+ALSO LOOK AT JERK?? 3rd derived
+
+A Fish acceleration ~= High velocity
+
+B ... turns ? 
+
+--> How this relates to shepherding:
+It is good to show that when attacking a fish, it doesn't go completely wild and moves to a whole other side of the aquarium,
+but only temporarily 'bursts' (accelerates) and slows down
+
+--> DONT FORGET ABOUT THE WALLS
+
+******
+
+3. Transfer entropy (maybe this becomes further detailing of (1) actually)
+=> Related to causality --> Measurement of how much the fish behavior can be predicted by the robot behavior
+
+? Need 'states' for this? Discrete 'strategies'
+
+===============================
+
+Group by wall present / absence
+
+
+===============================
+
+We need to look at more in terms of trajectories I believe
+For instance, the robot may approach fast to the fish, but the fish doesnt react at distance 8,
+but the fish will react by accelerating just moments later when the robot is at distance 4 for example.
+In other cases, the fish might react sooner at a distance 6 for instance.
+
+Also, it seems the fish is reacting more intensely when the robot is almost hitting the fish their back,
+(frame: 12627 =>) while if the robot moves parallel, it may not react that much; or the fish is at the wall
+
+Test ->
+1. Take out fish near walls
+2. Take out robots moving parallel to fish 
+3. (1) and (2)

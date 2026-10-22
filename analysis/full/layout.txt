@@ -1,0 +1,61 @@
+3 (sub)sets of data:
+- full
+- peaks (when the fish accelerates above a threshold) ~ ESCAPE-like motion
+- manually selected trials (88)
+
+SUBSECTION 1: [FULL + TRIALS]
+
+* Fish Behaviors
+- Full: percentages
+- Trial: phase - behavior mapping
+
+SUBSECTION 2: FULL 
+* 2 Figs Heatmaps  --> spatial frequency of the robot in relation the fish position
+                   --> acceleration of the fish in relation the robot position
+
+SUBSECTION 3: FULL + ESCAPE-peaks
+
+* descriptives + distributions between the two sets + paired t-test
+* fixed effects model
+* heatmap retreat speed of fish ~ (x-axis) distance and (y-axis) approach speed of robot
+
+==========
+FRAME_COUNT
+0: 16038
+1: 19668
+2: 18629
+3: 23045
+4: 24547
+
+NR_AUTOMATIC_TRIALS_DETEC
+0: 44
+1: 55
+2: 49
+3: 64
+4: 64
+
+ACCURACIES
+0:
+---> Total tracking accuracy improved from 0.9262% to 0.9327%.
+---> Active tracking accuracy improved from 0.9946% to 1.0000%.
+---> Milling tracking accuracy improved from 0.2918% to 0.2918%.
+
+1:
+---> Total tracking accuracy improved from 0.9168% to 0.9267%.
+---> Active tracking accuracy improved from 0.9885% to 1.0000%.
+---> Milling tracking accuracy improved from 0.1588% to 0.1588%.
+
+2:
+---> Total tracking accuracy improved from 0.9081% to 0.9195%.
+---> Active tracking accuracy improved from 0.9872% to 1.0000%.
+---> Milling tracking accuracy improved from 0.0448% to 0.0448%.
+
+3:
+---> Total tracking accuracy improved from 0.9265% to 0.9349%.
+---> Active tracking accuracy improved from 0.9923% to 1.0000%.
+---> Milling tracking accuracy improved from 0.0254% to 0.0254%.
+
+4:
+---> Total tracking accuracy improved from 0.9237% to 0.9389%.
+---> Active tracking accuracy improved from 0.9836% to 1.0000%.
+---> Milling tracking accuracy improved from 0.0663% to 0.0663%.
